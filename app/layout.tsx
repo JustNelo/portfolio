@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { exo2, plusJakartaSans } from "./fonts";
+import { anton, jetbrainsMono } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${exo2.variable} ${plusJakartaSans.variable} antialiased`}
+        className={`${anton.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
       </body>

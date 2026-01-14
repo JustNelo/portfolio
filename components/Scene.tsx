@@ -16,7 +16,7 @@ export default function Scene(): React.JSX.Element {
           far: 100
         }}
         gl={{ antialias: true }}
-        style={{ background: '#010304' }}
+        style={{ background: 'var(--color-background)' }}
         onCreated={({ camera }) => {
           camera.lookAt(0, 0, -5)
         }}

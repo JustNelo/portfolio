@@ -7,9 +7,9 @@ export default function PostProcessingEffects(): React.JSX.Element {
   return (
     <EffectComposer>
       <Bloom
-        intensity={1.5}
-        luminanceThreshold={0.1}
-        luminanceSmoothing={0.9}
+        intensity={2.0}
+        luminanceThreshold={0.15}
+        luminanceSmoothing={0.8}
         mipmapBlur
       />
       <Vignette

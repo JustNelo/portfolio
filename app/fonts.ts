@@ -1,14 +1,16 @@
-import { Exo_2, Plus_Jakarta_Sans } from "next/font/google";
+import { Anton, JetBrains_Mono } from "next/font/google";
 
-export const exo2 = Exo_2({
-  variable: "--font-exo2",
+// Heading font
+export const anton = Anton({
+  variable: "--font-heading",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "400",
 });
 
-export const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+// Body font
+export const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700"],

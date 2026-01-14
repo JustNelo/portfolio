@@ -196,40 +196,40 @@ const fragmentShader = `
     // Reduce lines intensity based on lighting and distance
     float lineIntensity = lines * ao * (1.0 - fog * 0.7);
     
-    // Colors
-    vec3 shadowColor = vec3(0.008, 0.015, 0.025);
-    vec3 midColor = vec3(0.015, 0.045, 0.07);
-    vec3 highlightColor = vec3(0.03, 0.09, 0.13);
-    vec3 lineColor = vec3(0.0, 0.5, 0.7);
-    vec3 glowColor = vec3(0.0, 0.65, 0.85);
-    vec3 fogColor = vec3(0.01, 0.025, 0.04);
+    // Colors - High contrast B&W premium palette
+    vec3 shadowColor = vec3(0.01, 0.01, 0.01);
+    vec3 midColor = vec3(0.04, 0.04, 0.04);
+    vec3 highlightColor = vec3(0.1, 0.1, 0.1);
+    vec3 lineColor = vec3(1.0, 1.0, 1.0);
+    vec3 glowColor = vec3(1.0, 1.0, 1.0);
+    vec3 fogColor = vec3(0.02, 0.02, 0.02);
     
     // Terrain shading based on lighting
     vec3 terrainColor = mix(shadowColor, midColor, ao);
     terrainColor = mix(terrainColor, highlightColor, diffuse * elevation);
     
     // Apply micro-texture to terrain
-    vec3 texColor = vec3(0.02, 0.06, 0.09);
+    vec3 texColor = vec3(0.08, 0.08, 0.08);
     terrainColor = mix(terrainColor, terrainColor + texColor * texture, texIntensity * 0.4);
     
     // Add texture variation on slopes (rocky appearance)
-    terrainColor += vec3(0.01, 0.03, 0.04) * texture * slope * 0.6 * (1.0 - fog);
+    terrainColor += vec3(0.04, 0.04, 0.04) * texture * slope * 0.6 * (1.0 - fog);
     
-    // Add rim lighting on slopes
+    // Add rim lighting on slopes - stronger edge definition
     float rim = 1.0 - max(dot(normal, vec3(0.0, 0.0, 1.0)), 0.0);
-    rim = pow(rim, 2.5) * 0.12;
-    terrainColor += vec3(0.0, 0.08, 0.12) * rim * (1.0 - fog);
+    rim = pow(rim, 2.0) * 0.18;
+    terrainColor += vec3(0.25, 0.25, 0.25) * rim * (1.0 - fog);
     
     // Mix colors
     vec3 color = mix(terrainColor, lineColor, lineIntensity * 0.75);
     
-    // Soft glow around main lines
-    float glow = smoothstep(0.1, 0.0, abs(lineVal - lineWidth * 0.5)) * 0.12 * ao;
+    // Soft glow around main lines - intensified
+    float glow = smoothstep(0.15, 0.0, abs(lineVal - lineWidth * 0.5)) * 0.25 * ao;
     color += glowColor * glow * (1.0 - fog * 0.5);
     
-    // Peak highlights with texture
-    float peakHighlight = smoothstep(0.7, 1.0, elevation) * diffuse * 0.2;
-    color += vec3(0.04, 0.15, 0.22) * peakHighlight * (0.8 + texture * 0.4);
+    // Peak highlights with texture - brighter peaks
+    float peakHighlight = smoothstep(0.65, 1.0, elevation) * diffuse * 0.35;
+    color += vec3(0.4, 0.4, 0.4) * peakHighlight * (0.8 + texture * 0.4);
     
     // Valley darkening
     float valleyDark = smoothstep(0.35, 0.1, elevation) * 0.4;

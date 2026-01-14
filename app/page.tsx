@@ -1,11 +1,13 @@
-import Scene from "./components/Scene";
-import TeaseCard from "./components/TeaseCard";
+import Scene from "../components/Scene";
+import AboutSection from "../components/AboutSection";
 
 export default function Home() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center font-sans">
+    <div className="relative min-h-screen">
       <Scene />
-      <TeaseCard />
+      <main className="relative z-10 min-h-screen">
+        <AboutSection />
+      </main>
     </div>
   );
 }
