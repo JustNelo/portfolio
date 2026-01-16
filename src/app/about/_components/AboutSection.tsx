@@ -2,25 +2,30 @@ import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from '@/app/ab
 
 export default function AboutSection(): React.JSX.Element {
   return (
-    <section className="relative h-screen overflow-hidden backdrop-blur-sm">
-      {/* Header - Fixed position */}
-      <div className="fixed top-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
-        <div className="grid grid-cols-8 sm:grid-cols-24 gap-16">
-          <div className="col-span-8 sm:col-span-10 md:col-span-11 sm:col-start-1 pointer-events-auto">
+    <section className="relative h-screen overflow-hidden">
+      <div className="hidden sm:block fixed top-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
+        <div className="grid grid-cols-24 gap-8 md:gap-16">
+          <div className="col-span-12 md:col-span-11 lg:col-span-10 pointer-events-auto">
             <AboutHeader />
           </div>
         </div>
       </div>
 
-      {/* Content - Full page with grid positioning to the right */}
       <InfiniteScroll>
-        <AboutContent />
+        <div className="relative sm:pt-20 pb-0 sm:pb-20">
+          <div className="sm:hidden p-4">
+            <AboutHeader />
+          </div>
+          <AboutContent />
+          <div className="sm:hidden p-4 mt-4">
+            <AboutFooter />
+          </div>
+        </div>
       </InfiniteScroll>
 
-      {/* Footer - Fixed position bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
-        <div className="sm:grid sm:grid-cols-24 gap-16">
-          <div className="sm:col-span-10 md:col-span-7 pointer-events-auto">
+      <div className="hidden sm:block fixed bottom-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
+        <div className="grid grid-cols-24 gap-8 md:gap-16">
+          <div className="col-span-10 md:col-span-7 pointer-events-auto">
             <AboutFooter />
           </div>
         </div>

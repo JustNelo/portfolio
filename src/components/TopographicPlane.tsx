@@ -1,126 +1,83 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useSceneStore } from '@/stores/useSceneStore'
+import { useIsMobile } from '@/hooks'
 
 interface Uniforms {
-  [uniform: string]: THREE.IUniform<number>
-  uTime: { value: number }
+  [uniform: string]: THREE.IUniform<number | THREE.Vector2>
+  uTime: THREE.IUniform<number>
+  uMouse: THREE.IUniform<THREE.Vector2>
 }
 
-const noiseGLSL = `
-  // Simplex 3D Noise
-  vec4 permute(vec4 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-  
-  float snoise(vec3 v) {
-    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-    
-    vec3 i  = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
-    
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
-    
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
-    
-    i = mod(i, 289.0);
-    vec4 p = permute(permute(permute(
-              i.z + vec4(0.0, i1.z, i2.z, 1.0))
-            + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-            + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-            
-    float n_ = 1.0/7.0;
-    vec3 ns = n_ * D.wyz - D.xzx;
-    
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-    
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-    
-    vec4 x = x_ *ns.x + ns.yyyy;
-    vec4 y = y_ *ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-    
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-    
-    vec4 s0 = floor(b0)*2.0 + 1.0;
-    vec4 s1 = floor(b1)*2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-    
-    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-    
-    vec3 p0 = vec3(a0.xy, h.x);
-    vec3 p1 = vec3(a0.zw, h.y);
-    vec3 p2 = vec3(a1.xy, h.z);
-    vec3 p3 = vec3(a1.zw, h.w);
-    
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-    p0 *= norm.x;
-    p1 *= norm.y;
-    p2 *= norm.z;
-    p3 *= norm.w;
-    
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-  }
-  
-  float fbm(vec3 p) {
-    float value = 0.0;
-    value += 0.5 * snoise(p);
-    value += 0.25 * snoise(p * 2.0);
-    value += 0.125 * snoise(p * 4.0);
-    return value;
-  }
-`
-
+/**
+ * Vertex shader: Creates animated topographic terrain using simplex noise.
+ * Mouse position creates subtle parallax offset for depth effect.
+ */
 const vertexShader = `
+  precision highp float;
+  
   uniform float uTime;
+  uniform vec2 uMouse;
   
   varying vec2 vUv;
   varying float vElevation;
-  varying vec3 vNormal;
   varying vec3 vPosition;
   
-  ${noiseGLSL}
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SIMPLEX NOISE 2D - Single function, optimized for smooth waves
+  // ═══════════════════════════════════════════════════════════════════════════
+  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
   
-  float getElevation(vec2 coord) {
-    float elev = fbm(vec3(coord, uTime * 0.02));
-    return elev * 0.5 + 0.5;
+  float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                        -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy));
+    vec2 x0 = v - i + dot(i, C.xx);
+    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod(i, 289.0);
+    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m;
+    m = m*m;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+    vec3 g;
+    g.x = a0.x * x0.x + h.x * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
   }
   
   void main() {
     vUv = uv;
-    
     vec3 pos = position;
     
-    // Scale for terrain features
-    vec2 noiseCoord = pos.xy * 0.3;
+    // Ultra-slow, hypnotic movement
+    float time = uTime * 0.05;
     
-    // Get elevation
-    float elevation = getElevation(noiseCoord);
-    pos.z = elevation * 2.5;
+    // Mouse parallax - subtle UV offset based on mouse position
+    vec2 mouseOffset = uMouse * 0.15;
     
-    // Calculate normal using finite differences - optimized with inline noise
-    float eps = 0.08;
-    vec3 timeVec = vec3(0.0, 0.0, uTime * 0.02);
-    float elevL = fbm(vec3(noiseCoord - vec2(eps, 0.0), 0.0) + timeVec) * 0.5 + 0.5;
-    float elevR = fbm(vec3(noiseCoord + vec2(eps, 0.0), 0.0) + timeVec) * 0.5 + 0.5;
-    float elevD = fbm(vec3(noiseCoord - vec2(0.0, eps), 0.0) + timeVec) * 0.5 + 0.5;
-    float elevU = fbm(vec3(noiseCoord + vec2(0.0, eps), 0.0) + timeVec) * 0.5 + 0.5;
+    // Single octave, large scale noise for smooth dunes
+    vec2 noiseCoord = pos.xy * 0.06 + vec2(time * 0.5, time * 0.3) + mouseOffset;
+    float noise = snoise(noiseCoord);
     
-    vec3 tangentX = vec3(2.0 * eps, 0.0, (elevR - elevL) * 2.5);
-    vec3 tangentY = vec3(0.0, 2.0 * eps, (elevU - elevD) * 2.5);
-    vNormal = normalize(cross(tangentY, tangentX));
+    // Sinusoidal smoothing - no sharp peaks, only gentle waves
+    float wave = sin(noise * 3.14159 * 0.5) * 0.5 + 0.5;
+    
+    // Smoothstep to round the tops like sand dunes
+    float elevation = smoothstep(0.0, 1.0, wave);
+    elevation = smoothstep(0.0, 1.0, elevation); // Double smoothstep for extra softness
+    
+    // Gentle height
+    pos.z = elevation * 1.8;
     
     vElevation = elevation;
     vPosition = pos;
@@ -129,135 +86,259 @@ const vertexShader = `
   }
 `
 
+/**
+ * Fragment shader: Renders dark oily surface with glowing topographic lines.
+ * Uses Blinn-Phong lighting, depth/height fog, and film grain for cinematic look.
+ */
 const fragmentShader = `
+  precision highp float;
+  
   uniform float uTime;
+  uniform vec2 uMouse;
   
   varying vec2 vUv;
   varying float vElevation;
-  varying vec3 vNormal;
   varying vec3 vPosition;
   
-  // Simple hash for procedural texture
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RANDOM & GRAIN - For film grain dithering
+  // ═══════════════════════════════════════════════════════════════════════════
+  float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
   }
   
-  // Value noise for texture
-  float valueNoise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  // High-frequency noise for glints
+  float glintNoise(vec2 st, float time) {
+    return random(st * 50.0 + vec2(time * 10.0));
   }
   
-  // FBM for detailed texture - optimized to 2 octaves
-  float fbmTexture(vec2 p) {
-    return 0.6 * valueNoise(p) + 0.4 * valueNoise(p * 2.0);
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SIMPLEX NOISE 2D - For smooth normal calculation
+  // ═══════════════════════════════════════════════════════════════════════════
+  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+  
+  float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                        -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy));
+    vec2 x0 = v - i + dot(i, C.xx);
+    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod(i, 289.0);
+    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m;
+    m = m*m;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+    vec3 g;
+    g.x = a0.x * x0.x + h.x * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
+  }
+  
+  // Compute elevation at any point (must match vertex shader logic)
+  float getElevation(vec2 pos, float time) {
+    vec2 noiseCoord = pos * 0.06 + vec2(time * 0.5, time * 0.3);
+    float noise = snoise(noiseCoord);
+    float wave = sin(noise * 3.14159 * 0.5) * 0.5 + 0.5;
+    float elev = smoothstep(0.0, 1.0, wave);
+    return smoothstep(0.0, 1.0, elev);
   }
   
   void main() {
     float elevation = vElevation;
-    vec3 normal = normalize(vNormal);
+    float time = uTime * 0.05;
     
-    // Distance-based fog
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SMOOTH NORMALS - Computed from noise function directly
+    // ═══════════════════════════════════════════════════════════════════════════
+    float eps = 0.1;
+    float hL = getElevation(vPosition.xy - vec2(eps, 0.0), time);
+    float hR = getElevation(vPosition.xy + vec2(eps, 0.0), time);
+    float hD = getElevation(vPosition.xy - vec2(0.0, eps), time);
+    float hU = getElevation(vPosition.xy + vec2(0.0, eps), time);
+    
+    vec3 normal = normalize(vec3(
+      (hL - hR) * 2.5,
+      (hD - hU) * 2.5,
+      1.0
+    ));
+    
+    float slope = 1.0 - normal.z;
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DEPTH FOG - Everything fades to pure black
+    // ═══════════════════════════════════════════════════════════════════════════
     float dist = length(vPosition.xy);
-    float fog = smoothstep(5.0, 18.0, dist);
+    float depthFog = smoothstep(3.0, 16.0, dist);
     
-    // Directional light from top-left
-    vec3 lightDir = normalize(vec3(-0.4, 0.7, 0.5));
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HEIGHT FOG - Only crests carry the white lines
+    // ═══════════════════════════════════════════════════════════════════════════
+    float heightFog = smoothstep(0.5, 0.0, elevation) * 0.85;
+    
+    // Combined fog
+    float fog = max(depthFog, heightFog);
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTING - Blinn-Phong Specular for oily reflections
+    // ═══════════════════════════════════════════════════════════════════════════
+    vec3 lightDir = normalize(vec3(-0.3, 0.7, 0.6));
+    vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
+    vec3 halfDir = normalize(lightDir + viewDir);
+    
     float diffuse = max(dot(normal, lightDir), 0.0);
     
-    // Ambient occlusion based on slope
-    float ao = 0.3 + 0.7 * diffuse;
+    // Blinn-Phong specular - concentrated white highlights on crests
+    float specAngle = max(dot(normal, halfDir), 0.0);
+    float specular = pow(specAngle, 32.0) * elevation * 0.8;
     
-    // Procedural micro-texture - more visible on slopes
-    float slope = 1.0 - abs(dot(normal, vec3(0.0, 0.0, 1.0)));
-    vec2 texCoord = vPosition.xy * 6.0;
-    float texture = fbmTexture(texCoord);
-    
-    // Texture intensity based on slope and elevation
-    float texIntensity = (0.3 + slope * 0.7) * (0.5 + elevation * 0.5);
-    texIntensity *= (1.0 - fog * 0.8);
-    
-    // Create smooth topographic lines - thickness varies with elevation
-    float lineFreq = 12.0;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TOPOGRAPHIC LINES - Double glow: sharp core + soft halo
+    // ═══════════════════════════════════════════════════════════════════════════
+    float lineFreq = 3.5;
     float lineVal = fract(elevation * lineFreq);
     
-    // Line width increases on peaks, thinner in valleys
-    float lineWidth = 0.02 + elevation * 0.015;
-    float lines = smoothstep(0.0, lineWidth * 0.5, lineVal) * (1.0 - smoothstep(lineWidth * 0.5, lineWidth, lineVal));
+    // Compute gradient for anti-aliasing
+    float gradX = getElevation(vPosition.xy + vec2(0.05, 0.0), time) - 
+                  getElevation(vPosition.xy - vec2(0.05, 0.0), time);
+    float gradY = getElevation(vPosition.xy + vec2(0.0, 0.05), time) - 
+                  getElevation(vPosition.xy - vec2(0.0, 0.05), time);
+    float fw = length(vec2(gradX, gradY)) * lineFreq * 0.8;
+    fw = max(fw, 0.002);
     
-    // Reduce lines intensity based on lighting and distance
-    float lineIntensity = lines * ao * (1.0 - fog * 0.7);
+    // Sharp core line (fiber optic center)
+    float coreWidth = 0.004;
+    float coreLines = smoothstep(coreWidth + fw * 0.5, coreWidth, lineVal) + 
+                      smoothstep(1.0 - coreWidth - fw * 0.5, 1.0 - coreWidth, lineVal);
+    coreLines = clamp(coreLines, 0.0, 1.0);
     
-    // Colors - High contrast B&W premium palette
-    vec3 shadowColor = vec3(0.01, 0.01, 0.01);
-    vec3 midColor = vec3(0.04, 0.04, 0.04);
-    vec3 highlightColor = vec3(0.1, 0.1, 0.1);
-    vec3 lineColor = vec3(1.0, 1.0, 1.0);
-    vec3 glowColor = vec3(1.0, 1.0, 1.0);
-    vec3 fogColor = vec3(0.02, 0.02, 0.02);
+    // Soft halo glow (neon bloom)
+    float haloWidth = 0.04;
+    float haloLines = smoothstep(haloWidth + fw, haloWidth * 0.3, lineVal) + 
+                      smoothstep(1.0 - haloWidth - fw, 1.0 - haloWidth * 0.3, lineVal);
+    haloLines = clamp(haloLines, 0.0, 1.0);
     
-    // Terrain shading based on lighting
-    vec3 terrainColor = mix(shadowColor, midColor, ao);
-    terrainColor = mix(terrainColor, highlightColor, diffuse * elevation);
+    // Lines only on slopes and crests, invisible in valleys
+    float slopeVisibility = smoothstep(0.02, 0.12, slope);
+    float crestVisibility = smoothstep(0.3, 0.7, elevation);
+    float lineVisibility = slopeVisibility * crestVisibility * (1.0 - fog * 0.95);
     
-    // Apply micro-texture to terrain
-    vec3 texColor = vec3(0.08, 0.08, 0.08);
-    terrainColor = mix(terrainColor, terrainColor + texColor * texture, texIntensity * 0.4);
+    // Core: pure white, full intensity
+    float coreIntensity = coreLines * lineVisibility * 0.9;
+    // Halo: subtle glow around core with breathing effect
+    float breathing = 0.12 + 0.06 * sin(uTime * 0.5);
+    float haloIntensity = haloLines * lineVisibility * breathing;
     
-    // Add texture variation on slopes (rocky appearance)
-    terrainColor += vec3(0.04, 0.04, 0.04) * texture * slope * 0.6 * (1.0 - fog);
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COLOR - Abyssal black with electric white accents
+    // ═══════════════════════════════════════════════════════════════════════════
+    vec3 abyssBlack = vec3(0.0);
+    vec3 coreWhite = vec3(1.0);
+    vec3 haloWhite = vec3(0.9);
     
-    // Add rim lighting on slopes - stronger edge definition
-    float rim = 1.0 - max(dot(normal, vec3(0.0, 0.0, 1.0)), 0.0);
-    rim = pow(rim, 2.0) * 0.18;
-    terrainColor += vec3(0.25, 0.25, 0.25) * rim * (1.0 - fog);
+    // Base terrain: pure black with minimal shading
+    vec3 terrainColor = vec3(diffuse * 0.02 * elevation);
     
-    // Mix colors
-    vec3 color = mix(terrainColor, lineColor, lineIntensity * 0.75);
+    // Crush the grays to deepen blacks
+    terrainColor = pow(terrainColor, vec3(1.5));
     
-    // Soft glow around main lines - intensified
-    float glow = smoothstep(0.15, 0.0, abs(lineVal - lineWidth * 0.5)) * 0.25 * ao;
-    color += glowColor * glow * (1.0 - fog * 0.5);
+    // Add specular highlights (oily reflections on crests)
+    terrainColor += vec3(1.0) * specular * (1.0 - fog);
     
-    // Peak highlights with texture - brighter peaks
-    float peakHighlight = smoothstep(0.65, 1.0, elevation) * diffuse * 0.35;
-    color += vec3(0.4, 0.4, 0.4) * peakHighlight * (0.8 + texture * 0.4);
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GLINTS - Micro-sparkles on intense specular areas
+    // ═══════════════════════════════════════════════════════════════════════════
+    float glint = glintNoise(vPosition.xy, uTime);
+    float glintThreshold = step(0.97, glint) * step(0.3, specular);
+    terrainColor += vec3(1.0) * glintThreshold * 0.8 * (1.0 - fog);
     
-    // Valley darkening
-    float valleyDark = smoothstep(0.35, 0.1, elevation) * 0.4;
-    color *= (1.0 - valleyDark);
+    // Layer the glow lines
+    vec3 color = terrainColor;
+    color = mix(color, haloWhite, haloIntensity);
+    color = mix(color, coreWhite, coreIntensity);
     
-    // Apply fog
-    color = mix(color, fogColor, fog * 0.6);
+    // Fade everything to pure black at distance
+    color = mix(color, abyssBlack, fog);
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FILM GRAIN - Cinematic texture
+    // ═══════════════════════════════════════════════════════════════════════════
+    float grain = random(vUv * 1000.0 + uTime) * 0.03 - 0.015;
+    color += grain;
     
     gl_FragColor = vec4(color, 1.0);
   }
 `
 
+/**
+ * Main 3D topographic plane component.
+ * Renders an animated terrain with mouse-reactive parallax effect.
+ */
 export default function TopographicPlane(): React.JSX.Element {
+  const isMobile = useIsMobile()
   const meshRef = useRef<THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>>(null)
+  const frameCount = useRef(0)
+  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 })
+  const setSceneReady = useSceneStore((state) => state.setSceneReady)
+  
+  const segments = isMobile ? 64 : 100
   
   const uniforms = useMemo<Uniforms>(() => ({
-    uTime: { value: 0 }
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0, 0) }
   }), [])
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.targetX = (e.clientX / window.innerWidth) * 2 - 1
+      mouseRef.current.targetY = -(e.clientY / window.innerHeight) * 2 + 1
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+  
+  // Dispose geometry and material to prevent memory leaks
+  useEffect(() => {
+    const mesh = meshRef.current
+    return () => {
+      if (mesh) {
+        mesh.geometry?.dispose()
+        ;(mesh.material as THREE.ShaderMaterial)?.dispose()
+      }
+    }
+  }, [])
   
   useFrame((state) => {
     if (meshRef.current && meshRef.current.material) {
       meshRef.current.material.uniforms.uTime.value = state.clock.elapsedTime
+      
+      const lerp = 0.05
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * lerp
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * lerp
+      meshRef.current.material.uniforms.uMouse.value.set(
+        mouseRef.current.x,
+        mouseRef.current.y
+      )
+      
+      if (frameCount.current < 5) {
+        frameCount.current++
+        state.invalidate()
+        if (frameCount.current === 3) {
+          setSceneReady(true)
+        }
+      }
     }
-  })
+  }, -1)
   
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2.8, 0, 0.08]} position={[0, -0.5, -4]}>
-      <planeGeometry args={[40, 40, 250, 250]} />
+      <planeGeometry args={[40, 40, segments, segments]} />
       <shaderMaterial
         uniforms={uniforms}
         vertexShader={vertexShader}

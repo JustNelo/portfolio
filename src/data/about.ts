@@ -1,4 +1,45 @@
-export const personalInfo = {
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+export interface PersonalInfo {
+  firstName: string
+  lastName: string
+  bio: string[]
+  bioMuted: string
+  ctaText: string
+  ctaHref: string
+}
+
+export interface Social {
+  name: string
+  href: string
+}
+
+export interface Skill {
+  category: string
+  items: string[]
+}
+
+export interface Experience {
+  title: string
+  company: string
+  period: string
+  description: string
+}
+
+export interface Education {
+  degree: string
+  school: string
+  period: string
+  description: string
+}
+
+export type TimelineItem = Experience | Education
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────────────────────
+export const personalInfo: PersonalInfo = {
   firstName: 'LÉON',
   lastName: 'GALLET',
   bio: [
@@ -11,19 +52,20 @@ export const personalInfo = {
   ctaHref: 'mailto:contact@example.com',
 }
 
-export const socials = [
+export const socials: Social[] = [
   { name: 'Email', href: 'mailto:contact@example.com' },
   { name: 'LinkedIn', href: '#' },
   { name: 'GitHub', href: '#' },
 ]
 
-export const skills = [
+export const skills: Skill[] = [
   { category: 'Frontend', items: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
   { category: 'Backend', items: ['Node.js', 'Python', 'PostgreSQL', 'MongoDB'] },
   { category: 'Tools', items: ['Git', 'Docker', 'Figma', 'VS Code'] },
+  { category: 'Languages', items: ['HTML', 'CSS', 'JavaScript', 'PHP', 'Java', 'C#'] },
 ]
 
-export const experiences = [
+export const experiences: Experience[] = [
   { 
     title: 'Senior Developer', 
     company: 'Tech Company', 
@@ -44,7 +86,7 @@ export const experiences = [
   },
 ]
 
-export const education = [
+export const education: Education[] = [
   {
     degree: 'Master in Computer Science',
     school: 'University of Technology',
@@ -54,7 +96,7 @@ export const education = [
   {
     degree: 'Bachelor in Software Engineering',
     school: 'Engineering School',
-    period: '2013 - 2016',
+    period: '2013 - 2020',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.'
   },
 ]

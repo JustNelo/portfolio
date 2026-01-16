@@ -1,11 +1,80 @@
 'use client'
 
-import { EffectComposer, Bloom, Vignette, Noise, Scanline } from '@react-three/postprocessing'
+import { useEffect, useState } from 'react'
+import { useThree } from '@react-three/fiber'
+import { EffectComposer, Bloom, Vignette, Noise, Scanline, SMAA } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
+import { useIsMobile } from '@/hooks'
+import type { QualityLevel } from '@/types'
 
-export default function PostProcessingEffects(): React.JSX.Element {
+/**
+ * Determines rendering quality based on device capabilities.
+ * Checks GPU vendor, device type, and pixel ratio to optimize performance.
+ */
+function usePerformanceLevel(): QualityLevel {
+  const { gl } = useThree()
+  const isMobile = useIsMobile()
+  const [quality, setQuality] = useState<QualityLevel>('high')
+
+  useEffect(() => {
+    const renderer = gl.getContext()
+    const debugInfo = renderer.getExtension('WEBGL_debug_renderer_info')
+    const gpuVendor = debugInfo 
+      ? renderer.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) 
+      : ''
+    
+    const isLowEndGPU = /Intel|Mali|Adreno 3|Adreno 4|PowerVR/i.test(gpuVendor)
+    const isHighDPR = window.devicePixelRatio > 2
+
+    if (isMobile || isLowEndGPU) {
+      setQuality('low')
+    } else if (isHighDPR) {
+      setQuality('medium')
+    } else {
+      setQuality('high')
+    }
+  }, [gl, isMobile])
+
+  return quality
+}
+
+export default function PostProcessingEffects(): React.JSX.Element | null {
+  const quality = usePerformanceLevel()
+
+  if (quality === 'low') {
+    return (
+      <EffectComposer multisampling={0}>
+        <Vignette
+          offset={0.3}
+          darkness={0.7}
+          blendFunction={BlendFunction.NORMAL}
+        />
+      </EffectComposer>
+    )
+  }
+
+  if (quality === 'medium') {
+    return (
+      <EffectComposer multisampling={0}>
+        <SMAA />
+        <Bloom
+          intensity={1.5}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.9}
+          mipmapBlur
+        />
+        <Vignette
+          offset={0.3}
+          darkness={0.8}
+          blendFunction={BlendFunction.NORMAL}
+        />
+      </EffectComposer>
+    )
+  }
+
   return (
-    <EffectComposer>
+    <EffectComposer multisampling={0}>
+      <SMAA />
       <Bloom
         intensity={2.0}
         luminanceThreshold={0.15}

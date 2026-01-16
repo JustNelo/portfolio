@@ -22,7 +22,7 @@ export default function InfiniteScroll({ children }: InfiniteScrollProps) {
       smoothWheel: true,
       duration: 1.2,
       wheelMultiplier: 0.8,
-      infinite: true,
+      infinite: false,
     })
 
     let animationFrameId: number
@@ -45,21 +45,10 @@ export default function InfiniteScroll({ children }: InfiniteScrollProps) {
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       <div ref={contentRef}>
-        {/* Original content */}
-        <div className="ui-about-content pt-16">
-          <div className="">
-            <div className="grid grid-cols-12 md:grid-cols-24 gap-16">
-              <div className="col-span-12 sm:col-span-5 sm:col-start-7 md:col-span-10 md:col-start-12">
-                {children}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Clone for seamless loop */}
-        <div className="ui-about-content ui-about-content--clone pt-16">
-          <div className="">
-            <div className="grid grid-cols-12 md:grid-cols-24 gap-16">
-              <div className="col-span-12 sm:col-span-5 sm:col-start-7 md:col-span-10 md:col-start-12">
+        <div className="ui-about-content pt-8 sm:pt-40 md:pt-48 lg:pt-16">
+          <div>
+            <div className="grid grid-cols-12 md:grid-cols-24 gap-4 sm:gap-8 md:gap-16">
+              <div className="col-span-12 sm:col-span-8 sm:col-start-4 md:col-span-10 md:col-start-12 lg:col-start-13">
                 {children}
               </div>
             </div>
