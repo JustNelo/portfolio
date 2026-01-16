@@ -1,9 +1,9 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import TopographicPlane from './TopographicPlane'
-import CameraController from './CameraController'
-import PostProcessingEffects from './PostProcessingEffects'
+import TopographicPlane from '@/components/TopographicPlane'
+import CameraController from '@/components/CameraController'
+import PostProcessingEffects from '@/components/PostProcessingEffects'
 
 export default function Scene(): React.JSX.Element {
   return (

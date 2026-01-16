@@ -1,5 +1,5 @@
-import Scene from "../components/Scene";
-import AboutSection from "../components/AboutSection";
+import Scene from "@/components/Scene";
+import AboutSection from "@/app/about/_components/AboutSection";
 
 export default function Home() {
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { anton, jetbrainsMono } from "./fonts";
-import "./globals.css";
+import { anton, jetbrainsMono } from "@/app/fonts";
+import "@/app/globals.css";
 
 export const metadata: Metadata = {
   title: "Portfolio - Léon Gallet",

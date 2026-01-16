@@ -1,4 +1,4 @@
-import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from './about'
+import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from '@/app/about/_components'
 
 export default function AboutSection(): React.JSX.Element {
   return (
