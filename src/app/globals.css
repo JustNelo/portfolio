@@ -18,6 +18,9 @@
   /* Border colors */
   --color-border: oklch(100% 0 0 / 0.05);
   --color-border-medium: oklch(100% 0 0 / 0.1);
+  
+  /* Stroke colors */
+  --color-stroke: rgba(255, 255, 255, 0.15);
 }
 
 body {

@@ -35,3 +35,17 @@ export type {
   Education,
   TimelineItem
 } from '@/data/about'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPABASE / PROJECT TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type { 
+  Project, 
+  ProjectInsert, 
+  ProjectUpdate,
+  ProjectMedia,
+  ProjectMediaInsert,
+  ProjectMediaUpdate,
+  MediaType
+} from './project'

@@ -85,7 +85,7 @@ function OutlinedYear({ year }: { year: string }) {
     <span 
       className="font-heading text-6xl sm:text-[80px] md:text-[100px] lg:text-[140px] leading-none select-none block"
       style={{
-        WebkitTextStroke: '1px rgba(255, 255, 255, 0.15)',
+        WebkitTextStroke: '1px var(--color-stroke)',
         WebkitTextFillColor: 'transparent',
       }}
     >
