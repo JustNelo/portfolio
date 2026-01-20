@@ -7,7 +7,7 @@ import type { TextElement } from '@/types'
 
 const CHARS = '0123456789ABCDEF!@#$%&<>[]'
 const DEFAULT_DURATION = 0.3
-const LOADER_EXIT_DELAY = 2.4
+const LOADER_EXIT_DELAY = 2.4 // Only applied on first visit
 const SCRAMBLE_SPEED = 25 // ms between character changes
 
 interface DecodeTextProps {
@@ -84,6 +84,9 @@ export default function DecodeText({
       .join('')
   }, [text, getRandomChar])
 
+  // Check if this is after initial load (no need to wait for loader)
+  const hasInitialized = useSceneStore((state) => state.hasInitialized)
+  
   // ignoreLoader bypasses scene ready check (used by Loader component itself)
   const shouldAnimate = isMounted && isInView && (ignoreLoader || isSceneReady)
 
@@ -127,7 +130,8 @@ export default function DecodeText({
     
     hasAnimated.current = true
     
-    const totalDelay = ignoreLoader ? delay : delay + LOADER_EXIT_DELAY
+    // Skip loader delay if already initialized (navigation between pages)
+    const totalDelay = (ignoreLoader || hasInitialized) ? delay : delay + LOADER_EXIT_DELAY
     
     if (totalDelay > 0) {
       delayTimeoutRef.current = setTimeout(() => runAnimation(), totalDelay * 1000)

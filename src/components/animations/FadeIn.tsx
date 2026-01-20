@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, type Variants } from 'framer-motion'
-import { type ReactNode } from 'react'
+import { motion, type Variants, useInView } from 'framer-motion'
+import { type ReactNode, useRef, useEffect, useState } from 'react'
 import type { FadeDirection, ContainerElement } from '@/types'
 
 interface FadeInProps {
@@ -30,6 +30,7 @@ const getDirectionOffset = (direction: FadeDirection, distance: number) => {
 /**
  * Fade-in animation wrapper using Framer Motion.
  * Uses transform and opacity only to avoid layout thrashing.
+ * Properly handles Next.js navigation by using useInView hook.
  */
 export default function FadeIn({
   children,
@@ -41,7 +42,18 @@ export default function FadeIn({
   once = true,
   as: Tag = 'div'
 }: FadeInProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once, margin: '-50px' })
+  const [hasAnimated, setHasAnimated] = useState(false)
+  
   const MotionTag = motion[Tag] as typeof motion.div
+
+  // Track when animation should trigger
+  useEffect(() => {
+    if (isInView && !hasAnimated) {
+      setHasAnimated(true)
+    }
+  }, [isInView, hasAnimated])
 
   const variants: Variants = {
     hidden: {
@@ -57,10 +69,10 @@ export default function FadeIn({
 
   return (
     <MotionTag
+      ref={ref}
       className={className}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once, margin: '-50px' }}
+      animate={hasAnimated ? 'visible' : 'hidden'}
       variants={variants}
       transition={{
         duration,

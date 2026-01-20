@@ -1,30 +1,18 @@
-import { supabase } from '@/lib/supabase'
-import type { Project } from '@/types'
+import { getProjects } from '@/services/project.service'
 import ProjectList from './_components/ProjectList'
 import { FadeIn, DecodeText } from '@/components/animations'
-import Scene from '@/components/Scene'
-
-async function getProjects(): Promise<Project[]> {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('year', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching projects:', error)
-    return []
-  }
-
-  return data || []
-}
+import { NavBar } from '@/components/ui'
 
 export default async function ProjectsPage() {
   const projects = await getProjects()
 
   return (
-    <>
-      <Scene />
-      <main className="relative min-h-screen">
+    <main className="relative min-h-screen">
+        <NavBar 
+          links={[
+            { href: '/about', label: 'À propos', position: 'right' },
+          ]} 
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <header className="mb-12 sm:mb-20">
             <FadeIn>
@@ -47,7 +35,6 @@ export default async function ProjectsPage() {
             <ProjectList projects={projects} />
           </FadeIn>
         </div>
-      </main>
-    </>
+    </main>
   )
 }

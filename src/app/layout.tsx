@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { anton, jetbrainsMono } from "@/app/fonts";
 import "@/app/globals.css";
+import Scene from "@/components/Scene";
 
 export const metadata: Metadata = {
   title: "Portfolio - Léon Gallet",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body
         className={`${anton.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <Scene />
         {children}
       </body>
     </html>

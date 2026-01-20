@@ -299,7 +299,8 @@ export default function TopographicPlane(): React.JSX.Element {
       mouseRef.current.targetX = (e.clientX / window.innerWidth) * 2 - 1
       mouseRef.current.targetY = -(e.clientY / window.innerHeight) * 2 + 1
     }
-    window.addEventListener('mousemove', handleMouseMove)
+    // Passive listener for better scroll/animation performance
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
   

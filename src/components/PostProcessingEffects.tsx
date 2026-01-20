@@ -9,7 +9,7 @@ import type { QualityLevel } from '@/types'
 
 /**
  * Determines rendering quality based on device capabilities.
- * Checks GPU vendor, device type, and pixel ratio to optimize performance.
+ * Uses RENDERER parameter (WEBGL_debug_renderer_info is deprecated in Firefox).
  */
 function usePerformanceLevel(): QualityLevel {
   const { gl } = useThree()
@@ -18,10 +18,23 @@ function usePerformanceLevel(): QualityLevel {
 
   useEffect(() => {
     const renderer = gl.getContext()
-    const debugInfo = renderer.getExtension('WEBGL_debug_renderer_info')
-    const gpuVendor = debugInfo 
-      ? renderer.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) 
-      : ''
+    
+    // Try to get GPU info - use RENDERER as fallback (Firefox deprecated WEBGL_debug_renderer_info)
+    let gpuVendor = ''
+    try {
+      // First try the standard RENDERER parameter
+      gpuVendor = renderer.getParameter(renderer.RENDERER) || ''
+      
+      // If that doesn't give useful info, try the debug extension (still works in Chrome/Safari)
+      if (!gpuVendor || gpuVendor === 'WebKit WebGL') {
+        const debugInfo = renderer.getExtension('WEBGL_debug_renderer_info')
+        if (debugInfo) {
+          gpuVendor = renderer.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || gpuVendor
+        }
+      }
+    } catch {
+      // Silently fail - will use default high quality
+    }
     
     const isLowEndGPU = /Intel|Mali|Adreno 3|Adreno 4|PowerVR/i.test(gpuVendor)
     const isHighDPR = window.devicePixelRatio > 2
