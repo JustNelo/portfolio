@@ -44,7 +44,7 @@ function MetadataItem({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-1">
         {label}
       </span>
-      <span className="font-mono text-sm text-primary uppercase tracking-wide">
+      <span className="font-mono text-sm text-primary uppercase tracking-widest">
         {value}
       </span>
     </div>
