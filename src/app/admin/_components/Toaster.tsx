@@ -50,38 +50,41 @@ export function Toaster() {
   if (!mounted) return null
 
   return createPortal(
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-20 lg:bottom-4 right-4 left-4 sm:left-auto z-60 flex flex-col gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={`
-            px-4 py-3 font-mono text-sm flex items-center gap-3 animate-slide-in
-            ${t.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/30' : ''}
-            ${t.type === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500/30' : ''}
-            ${t.type === 'info' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/30' : ''}
+            px-4 py-3.5 font-mono text-sm flex items-center gap-3 animate-slide-in
+            backdrop-blur-xl rounded-xl shadow-xl
+            ${t.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/30 shadow-green-500/10' : ''}
+            ${t.type === 'error' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-red-500/10' : ''}
+            ${t.type === 'info' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-blue-500/10' : ''}
           `}
         >
           {t.type === 'success' && (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           )}
           {t.type === 'error' && (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           )}
           {t.type === 'info' && (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )}
-          <span>{t.message}</span>
+          <span className="flex-1">{t.message}</span>
           <button
             onClick={() => toasterState?.removeToast(t.id)}
-            className="ml-2 opacity-60 hover:opacity-100 transition-opacity"
+            className="p-1 opacity-60 hover:opacity-100 hover:bg-white/10 rounded-lg transition-all"
           >
-            ×
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
       ))}

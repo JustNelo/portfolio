@@ -185,16 +185,28 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
         }
       })
     } else if (mode === 'edit' && project) {
-      // Keep existing media IDs
-      const keepMediaIds = medias.filter((m) => m.isExisting).map((m) => m.id)
-      formData.append('keep_media_ids', JSON.stringify(keepMediaIds))
+      // Send existing media IDs with their new order
+      const existingMediasOrder = medias
+        .map((m, index) => ({ id: m.id, order: index, isExisting: m.isExisting }))
+        .filter((m) => m.isExisting)
+        .map(({ id, order }) => ({ id, order }))
+      formData.append('existing_medias_order', JSON.stringify(existingMediasOrder))
 
-      // Add new medias
-      medias
-        .filter((m) => !m.isExisting && m.file)
-        .forEach((media) => {
-          formData.append('new_medias', media.file!)
-        })
+      // Add new medias with their order position
+      const newMediasWithOrder: { index: number; file: File }[] = []
+      medias.forEach((media, index) => {
+        if (!media.isExisting && media.file) {
+          newMediasWithOrder.push({ index, file: media.file })
+        }
+      })
+      
+      // Send new media order separately
+      formData.append('new_medias_order', JSON.stringify(newMediasWithOrder.map(m => m.index)))
+      
+      // Add new media files in order
+      newMediasWithOrder.forEach(({ file }) => {
+        formData.append('new_medias', file)
+      })
 
       startTransition(async () => {
         const result = await updateProject(project.id, formData)
@@ -217,30 +229,30 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
   const isLoading = isPending || isCompressing
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
       {/* Title & Slug */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Titre *
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
             required
           />
         </div>
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Slug *
           </label>
           <input
             type="text"
             value={slug}
             onChange={(e) => handleSlugChange(e.target.value)}
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
             required
           />
         </div>
@@ -248,22 +260,22 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
 
       {/* Description */}
       <div>
-        <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+        <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
           Description *
         </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors resize-none"
+          className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 resize-none placeholder:text-white/30"
           required
         />
       </div>
 
       {/* Year & Category */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Année *
           </label>
           <input
@@ -272,12 +284,12 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             onChange={(e) => setYear(parseInt(e.target.value))}
             min={2000}
             max={2100}
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200"
             required
           />
         </div>
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Catégorie *
           </label>
           <input
@@ -285,41 +297,41 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Web Design, Branding, etc."
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-muted/50"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
             required
           />
         </div>
       </div>
 
       {/* Agency & Client */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Agence
           </label>
           <input
             type="text"
             value={agency}
             onChange={(e) => setAgency(e.target.value)}
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
         </div>
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Client
           </label>
           <input
             type="text"
             value={client}
             onChange={(e) => setClient(e.target.value)}
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
         </div>
       </div>
 
       {/* Responsibilities */}
       <div>
-        <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+        <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
           Responsabilités
         </label>
         <div className="flex gap-2 mb-3">
@@ -334,12 +346,12 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
               }
             }}
             placeholder="Ex: Creative Direction"
-            className="flex-1 bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-muted/50"
+            className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
           <button
             type="button"
             onClick={addResponsibility}
-            className="px-4 py-3 bg-card border border-border-medium font-mono text-sm text-primary hover:bg-primary hover:text-background transition-colors"
+            className="px-5 py-3.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-lg font-mono text-sm text-primary hover:bg-primary/20 hover:border-primary/30 transition-all duration-200"
           >
             +
           </button>
@@ -349,13 +361,13 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             {responsibilities.map((resp, index) => (
               <span
                 key={index}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-card border border-border-medium font-mono text-xs text-primary"
+                className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-lg font-mono text-xs text-white/80"
               >
                 {resp}
                 <button
                   type="button"
                   onClick={() => removeResponsibility(index)}
-                  className="text-muted hover:text-red-500 transition-colors"
+                  className="text-white/40 hover:text-red-400 transition-colors"
                 >
                   ×
                 </button>
@@ -366,9 +378,9 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
       </div>
 
       {/* Development & External URL */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Développement
           </label>
           <input
@@ -376,11 +388,11 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             value={development}
             onChange={(e) => setDevelopment(e.target.value)}
             placeholder="Ex: Darkroom Engineering"
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-muted/50"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
         </div>
         <div>
-          <label className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-2">
+          <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             URL externe
           </label>
           <input
@@ -388,14 +400,14 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             value={externalUrl}
             onChange={(e) => setExternalUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full bg-card border border-border-medium px-4 py-3 font-mono text-sm text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-muted/50"
+            className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
         </div>
       </div>
 
       {/* Media Uploader */}
       <div className="space-y-4">
-        <label className="font-mono text-[10px] text-muted uppercase tracking-widest block">
+        <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block">
           Médias
         </label>
 
@@ -409,8 +421,11 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
           onDrop={handleDrop}
           onClick={() => document.getElementById('media-input')?.click()}
           className={`
-            border-2 border-dashed rounded-none p-8 text-center cursor-pointer transition-colors
-            ${isDragging ? 'border-primary bg-primary/5' : 'border-border-medium hover:border-primary/50'}
+            border-2 border-dashed rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-300
+            ${isDragging 
+              ? 'border-primary bg-primary/10 backdrop-blur-xl' 
+              : 'border-white/20 hover:border-primary/50 hover:bg-white/5 backdrop-blur-xl'
+            }
           `}
         >
           <input
@@ -422,10 +437,13 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             className="hidden"
           />
           <div className="space-y-2">
-            <div className="font-mono text-sm text-muted">
+            <svg className="w-10 h-10 mx-auto text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <div className="font-mono text-sm text-white/60">
               {isDragging ? 'Déposez les fichiers ici' : 'Glissez-déposez vos images/vidéos'}
             </div>
-            <div className="font-mono text-xs text-muted/60">
+            <div className="font-mono text-xs text-white/30">
               Images auto-compressées en WebP (max 1920px, 1MB)
             </div>
           </div>
@@ -433,9 +451,9 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
 
         {/* Preview grid */}
         {medias.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 lg:gap-4">
             {medias.map((media, index) => (
-              <div key={media.id} className="relative group aspect-video bg-card overflow-hidden">
+              <div key={media.id} className="relative group aspect-video bg-black/30 rounded-lg overflow-hidden border border-white/10">
                 {media.type === 'image' ? (
                   <Image
                     src={media.preview}
@@ -448,35 +466,37 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
                 )}
 
                 {/* Overlay controls */}
-                <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => moveMedia(index, 'up')}
                     disabled={index === 0}
-                    className="p-2 font-mono text-xs text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2.5 font-mono text-xs text-white hover:text-primary hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     ←
                   </button>
-                  <span className="font-mono text-xs text-muted">{index + 1}</span>
+                  <span className="font-mono text-xs text-white/60 px-2">{index + 1}</span>
                   <button
                     type="button"
                     onClick={() => moveMedia(index, 'down')}
                     disabled={index === medias.length - 1}
-                    className="p-2 font-mono text-xs text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2.5 font-mono text-xs text-white hover:text-primary hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     →
                   </button>
                   <button
                     type="button"
                     onClick={() => removeMedia(media.id)}
-                    className="absolute top-2 right-2 p-1 font-mono text-xs text-red-500 hover:bg-red-500/10"
+                    className="absolute top-2 right-2 p-2 text-white/60 hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
                   >
-                    ✕
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
 
                 {/* Type badge */}
-                <div className="absolute bottom-2 left-2 font-mono text-[9px] text-primary/80 bg-background/80 px-1.5 py-0.5 uppercase">
+                <div className="absolute bottom-2 left-2 font-mono text-[9px] text-white/80 bg-black/60 backdrop-blur-sm px-2 py-1 rounded uppercase">
                   {media.isExisting ? 'existing' : 'new'} · {media.type}
                 </div>
               </div>
@@ -489,7 +509,7 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-primary text-background font-mono text-sm uppercase tracking-widest py-4 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary/90 backdrop-blur-sm text-background font-mono text-sm uppercase tracking-widest py-4 rounded-xl hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading
           ? isCompressing

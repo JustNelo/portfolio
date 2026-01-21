@@ -260,11 +260,21 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
 
   const validatedData = validationResult.data
 
-  // Get existing media IDs to keep
-  const keepMediaIds = JSON.parse((formData.get('keep_media_ids') as string) || '[]') as string[]
+  // Get existing medias with their new order
+  const existingMediasOrder = JSON.parse(
+    (formData.get('existing_medias_order') as string) || '[]'
+  ) as { id: string; order: number }[]
+  
+  // Get new media order positions
+  const newMediasOrder = JSON.parse(
+    (formData.get('new_medias_order') as string) || '[]'
+  ) as number[]
 
   // Get new media files
   const newMediaFiles = formData.getAll('new_medias') as File[]
+  
+  // Extract IDs of medias to keep
+  const keepMediaIds = existingMediasOrder.map((m) => m.id)
 
   // Step 1: Get current medias
   const { data: currentMedias } = await supabase
@@ -289,9 +299,16 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
     }
   }
 
-  // Step 3: Upload new media files
+  // Step 3: Update order of existing medias
+  for (const mediaOrder of existingMediasOrder) {
+    await supabase
+      .from('project_medias')
+      .update({ order: mediaOrder.order })
+      .eq('id', mediaOrder.id)
+  }
+
+  // Step 4: Upload new media files with correct order
   const uploadedMedias: { url: string; type: 'image' | 'video'; order: number }[] = []
-  const startOrder = keepMediaIds.length
 
   for (let i = 0; i < newMediaFiles.length; i++) {
     const file = newMediaFiles[i]
@@ -320,15 +337,18 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
       .getPublicUrl(filePath)
 
     const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image'
+    
+    // Use the order from newMediasOrder array
+    const order = newMediasOrder[i] ?? (existingMediasOrder.length + i)
 
     uploadedMedias.push({
       url: urlData.publicUrl,
       type: mediaType,
-      order: startOrder + i,
+      order,
     })
   }
 
-  // Step 4: Update project in database
+  // Step 5: Update project in database
   const { error: projectError } = await supabase
     .from('projects')
     .update({
@@ -350,7 +370,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
     return { success: false, message: `Erreur mise à jour projet: ${projectError.message}` }
   }
 
-  // Step 5: Insert new media entries
+  // Step 6: Insert new media entries
   if (uploadedMedias.length > 0) {
     const { error: mediaError } = await supabase
       .from('project_medias')

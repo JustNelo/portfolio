@@ -6,20 +6,20 @@ import { ProjectsTableSkeleton } from './_components/ProjectsTableSkeleton'
 
 export default function AdminProjectsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-3xl text-primary uppercase tracking-tight">
+          <h1 className="font-heading text-2xl lg:text-3xl text-primary uppercase tracking-tight drop-shadow-lg">
             Projets
           </h1>
-          <p className="font-mono text-sm text-muted mt-1">
+          <p className="font-mono text-xs lg:text-sm text-white/50 mt-1">
             Gérez vos projets de portfolio
           </p>
         </div>
         <Link
           href="/admin/projects/new"
-          className="px-6 py-3 bg-primary text-background font-mono text-xs uppercase tracking-widest hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center justify-center px-5 py-3 bg-primary/90 backdrop-blur-sm text-background font-mono text-xs uppercase tracking-widest hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 rounded-lg"
         >
           + Nouveau projet
         </Link>
