@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { supabase as browserClient } from '@/lib/supabase'
+import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import type { Project, ProjectMedia, ProjectInsert, ProjectMediaInsert } from '@/types'
 
 /**
@@ -94,7 +94,8 @@ export async function getProjectById(id: string): Promise<Project | null> {
  * Get all projects (client-side)
  */
 export async function getProjectsClient(): Promise<Project[]> {
-  const { data, error } = await browserClient
+  const supabase = createBrowserClient()
+  const { data, error } = await supabase
     .from('projects')
     .select('*')
     .order('year', { ascending: false })

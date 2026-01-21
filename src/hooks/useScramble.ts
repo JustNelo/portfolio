@@ -55,14 +55,22 @@ export function useScramble(
     startScrambled = false,
   } = options
 
-  const [displayText, setDisplayText] = useState(() => 
-    startScrambled ? scrambleInitial(text, chars) : text
-  )
+  // Always init with original text to avoid hydration mismatch (Math.random differs server/client)
+  const [displayText, setDisplayText] = useState(text)
   const [isAnimating, setIsAnimating] = useState(false)
+  const hasScrambledInitially = useRef(false)
   
   const rafRef = useRef<number | null>(null)
   const delayTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastFrameTime = useRef(0)
+  
+  // Scramble after mount if startScrambled is true (client-only)
+  useEffect(() => {
+    if (startScrambled && !hasScrambledInitially.current) {
+      hasScrambledInitially.current = true
+      setDisplayText(scrambleInitial(text, chars))
+    }
+  }, [startScrambled, text, chars])
 
   const getRandomChar = useCallback(() => {
     return chars[Math.floor(Math.random() * chars.length)]
@@ -179,5 +187,3 @@ function scrambleInitial(text: string, chars: string): string {
     })
     .join('')
 }
-
-export default useScramble

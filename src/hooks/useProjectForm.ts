@@ -201,5 +201,3 @@ export function useProjectForm(): ProjectFormState & ProjectFormActions & Submit
     setMessage,
   }
 }
-
-export default useProjectForm

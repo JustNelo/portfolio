@@ -22,19 +22,19 @@ function ScanLine() {
 }
 
 export default function Loader() {
-  const isSceneReady = useSceneStore((state) => state.isSceneReady)
+  const canReveal = useSceneStore((state) => state.canReveal)
   const [isVisible, setIsVisible] = useState(true)
   const [showReady, setShowReady] = useState(false)
 
   useEffect(() => {
-    if (isSceneReady) {
+    if (canReveal) {
       setShowReady(true)
       const timer = setTimeout(() => {
         setIsVisible(false)
       }, 1200)
       return () => clearTimeout(timer)
     }
-  }, [isSceneReady])
+  }, [canReveal])
 
   return (
     <AnimatePresence>
@@ -76,9 +76,9 @@ export default function Loader() {
                 className="absolute inset-y-0 left-0 w-full bg-white origin-left"
                 style={{ willChange: 'transform' }}
                 animate={{ 
-                  scaleX: isSceneReady ? 1 : [0, 0.4, 0.2, 0.6, 0.35],
+                  scaleX: canReveal ? 1 : [0, 0.4, 0.2, 0.6, 0.35],
                 }}
-                transition={isSceneReady ? { duration: 0.5, ease: [0.16, 1, 0.3, 1] } : {
+                transition={canReveal ? { duration: 0.5, ease: [0.16, 1, 0.3, 1] } : {
                   duration: 3,
                   repeat: Infinity,
                   ease: 'easeInOut',

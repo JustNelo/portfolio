@@ -1,51 +1,98 @@
 'use client'
 
-import { useState, useEffect, Suspense, useCallback } from 'react'
+import { useState, useEffect, Suspense, useCallback, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { PerformanceMonitor } from '@react-three/drei'
+import { PerformanceMonitor, Preload } from '@react-three/drei'
 import TopographicPlane from '@/components/TopographicPlane'
 import CameraController from '@/components/CameraController'
 import PostProcessingEffects from '@/components/PostProcessingEffects'
 import Loader from '@/components/ui/Loader'
-import { useSceneStore } from '@/stores/useSceneStore'
+import { useSceneStore, getHasCompletedFirstLoad, setHasCompletedFirstLoad } from '@/stores/useSceneStore'
+
+// Minimum time to show loader for smooth UX (in ms)
+const MIN_LOADER_DURATION = 2500
+// Delay after "READY" before hiding loader (matches Loader animation)
+const LOADER_EXIT_DELAY = 1400
 
 export default function Scene(): React.JSX.Element {
   const isSceneReady = useSceneStore((state) => state.isSceneReady)
-  const hasInitialized = useSceneStore((state) => state.hasInitialized)
-  const setHasInitialized = useSceneStore((state) => state.setHasInitialized)
   const setContextLost = useSceneStore((state) => state.setContextLost)
+  const setCanRevealStore = useSceneStore((state) => state.setCanReveal)
+  const setLoaderGone = useSceneStore((state) => state.setLoaderGone)
   
-  const [isVisible, setIsVisible] = useState(hasInitialized)
-  const [frameloop, setFrameloop] = useState<'demand' | 'always'>(hasInitialized ? 'always' : 'demand')
+  // Check module-level flag immediately (synchronous, no hydration issues)
+  const isReturningVisitor = useRef(getHasCompletedFirstLoad()).current
+  
+  // Always render at full frameloop to pre-warm GPU, but keep scene hidden
+  const [isVisible, setIsVisible] = useState(isReturningVisitor)
   const [dpr, setDpr] = useState<[number, number]>([1, 1.5])
+  const [showLoader, setShowLoader] = useState(!isReturningVisitor)
+  const [minTimeElapsed, setMinTimeElapsed] = useState(isReturningVisitor)
+  const [canReveal, setCanReveal] = useState(isReturningVisitor)
+  
+  // Track willChange for performance (only during transition)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Minimum loader duration timer
   useEffect(() => {
-    if (isSceneReady && !hasInitialized) {
-      setHasInitialized(true)
-      setFrameloop('always')
-      const timer = setTimeout(() => setIsVisible(true), 100)
-      return () => clearTimeout(timer)
-    } else if (hasInitialized) {
-      setIsVisible(true)
-      setFrameloop('always')
+    if (isReturningVisitor) return
+    
+    const timer = setTimeout(() => {
+      setMinTimeElapsed(true)
+    }, MIN_LOADER_DURATION)
+    
+    return () => clearTimeout(timer)
+  }, [isReturningVisitor])
+
+  // When both conditions are met, signal we can reveal
+  useEffect(() => {
+    if (isReturningVisitor) return
+    if (!isSceneReady || !minTimeElapsed) return
+    
+    setCanReveal(true)
+    setCanRevealStore(true) // Sync to store for Loader
+    setHasCompletedFirstLoad(true)
+  }, [isSceneReady, minTimeElapsed, isReturningVisitor, setCanRevealStore])
+
+  // Handle the actual reveal after loader exit animation completes
+  useEffect(() => {
+    if (isReturningVisitor) {
+      // For returning visitors, loader is already gone
+      setLoaderGone(true)
+      return
     }
-  }, [isSceneReady, hasInitialized, setHasInitialized])
+    if (!canReveal) return
+    
+    // Start transition
+    setIsTransitioning(true)
+    
+    // Wait for loader's "READY" animation + exit transition
+    const timer = setTimeout(() => {
+      setShowLoader(false)
+      // Use double rAF for browser to process loader removal first
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+          setLoaderGone(true) // Signal that loader is completely gone
+          // Clean up willChange after transition
+          setTimeout(() => setIsTransitioning(false), 1500)
+        })
+      })
+    }, LOADER_EXIT_DELAY)
+    
+    return () => clearTimeout(timer)
+  }, [canReveal, isReturningVisitor, setLoaderGone])
 
   const handleContextLost = useCallback((event: WebGLContextEvent) => {
     event.preventDefault()
     console.warn('WebGL context lost - attempting recovery')
     setContextLost(true)
-    setFrameloop('demand')
   }, [setContextLost])
 
   const handleContextRestored = useCallback(() => {
     console.log('WebGL context restored')
     setContextLost(false)
-    setFrameloop('always')
   }, [setContextLost])
-
-  // Show loader only on first visit
-  const showLoader = !hasInitialized
 
   return (
     <>
@@ -55,11 +102,11 @@ export default function Scene(): React.JSX.Element {
         style={{
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          willChange: 'opacity'
+          willChange: isTransitioning ? 'opacity' : 'auto'
         }}
       >
         <Canvas
-          frameloop={frameloop}
+          frameloop="always"
           dpr={dpr}
           performance={{ min: 0.5 }}
           camera={{ 
@@ -91,8 +138,9 @@ export default function Scene(): React.JSX.Element {
           <Suspense fallback={null}>
             <CameraController />
             <TopographicPlane />
-            {isSceneReady && <PostProcessingEffects />}
+            <PostProcessingEffects />
           </Suspense>
+          <Preload all />
         </Canvas>
       </div>
     </>

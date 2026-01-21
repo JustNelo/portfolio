@@ -204,12 +204,8 @@ const fragmentShader = `
     float lineFreq = 3.5;
     float lineVal = fract(elevation * lineFreq);
     
-    // Compute gradient for anti-aliasing
-    float gradX = getElevation(vPosition.xy + vec2(0.05, 0.0), time) - 
-                  getElevation(vPosition.xy - vec2(0.05, 0.0), time);
-    float gradY = getElevation(vPosition.xy + vec2(0.0, 0.05), time) - 
-                  getElevation(vPosition.xy - vec2(0.0, 0.05), time);
-    float fw = length(vec2(gradX, gradY)) * lineFreq * 0.8;
+    // Use screen-space derivatives for anti-aliasing (no extra noise samples)
+    float fw = fwidth(elevation) * lineFreq * 2.0;
     fw = max(fw, 0.002);
     
     // Sharp core line (fiber optic center)
@@ -327,10 +323,12 @@ export default function TopographicPlane(): React.JSX.Element {
         mouseRef.current.y
       )
       
-      if (frameCount.current < 5) {
+      // Wait for more frames to ensure shaders are compiled and scene is stable
+      if (frameCount.current < 10) {
         frameCount.current++
         state.invalidate()
-        if (frameCount.current === 3) {
+        // Signal ready after 8 frames - gives GPU time to compile shaders
+        if (frameCount.current === 8) {
           setSceneReady(true)
         }
       }

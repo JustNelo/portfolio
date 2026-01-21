@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { generateSlug } from '@/lib/validations/project'
+import { createProject } from '@/lib/actions/project'
 import MediaUploader, { type MediaPreview } from './_components/MediaUploader'
 
 export default function NewProjectPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Form state
@@ -51,10 +52,8 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setMessage(null)
 
-    // Build FormData for API route
     const formData = new FormData()
     formData.append('title', title)
     formData.append('slug', slug)
@@ -67,36 +66,23 @@ export default function NewProjectPage() {
     formData.append('development', development)
     formData.append('external_url', externalUrl)
 
-    // Append media files in order
     medias.forEach((media) => {
       formData.append('medias', media.file)
     })
 
-    try {
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const result = await response.json()
+    startTransition(async () => {
+      const result = await createProject(formData)
 
       if (result.success) {
         setMessage({ type: 'success', text: result.message })
-        // Cleanup previews
         medias.forEach(m => URL.revokeObjectURL(m.preview))
-        // Redirect after short delay
         setTimeout(() => {
           router.push(`/projects/${result.slug}`)
         }, 1500)
       } else {
         setMessage({ type: 'error', text: result.message })
-        setLoading(false)
       }
-    } catch (error) {
-      console.error('Submit error:', error)
-      setMessage({ type: 'error', text: 'Une erreur est survenue lors de la soumission.' })
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -311,10 +297,10 @@ export default function NewProjectPage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={isPending}
             className="w-full bg-primary text-background font-mono text-sm uppercase tracking-widest py-4 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Création en cours...' : 'Créer le projet'}
+            {isPending ? 'Création en cours...' : 'Créer le projet'}
           </button>
         </div>
       </form>

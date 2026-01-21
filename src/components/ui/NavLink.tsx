@@ -18,13 +18,8 @@ export interface NavLinkProps {
 export default function NavLink({ 
   href, 
   label, 
-  position = 'right',
   delay = 0 
 }: NavLinkProps) {
-  const positionClasses = position === 'left'
-    ? 'left-4 sm:left-6 lg:left-8'
-    : 'right-4 sm:right-6 lg:right-8'
-
   return (
     <FadeIn delay={delay}>
       <Link 
