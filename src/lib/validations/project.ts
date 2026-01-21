@@ -13,6 +13,8 @@ export const projectSchema = z.object({
   external_url: z.string().url().optional().nullable().or(z.literal('')),
 })
 
+export const updateProjectSchema = projectSchema
+
 export type ProjectFormData = z.infer<typeof projectSchema>
 
 export function generateSlug(title: string): string {
