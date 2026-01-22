@@ -1,6 +1,10 @@
-import { socials } from '@/data/about'
+import type { Social } from '@/lib/validations/about'
 
-export default function AboutFooter() {
+interface AboutFooterProps {
+  socials: Social[]
+}
+
+export default function AboutFooter({ socials }: AboutFooterProps) {
   return (
     <div className="flex flex-col gap-2">
       {socials.map((social) => (

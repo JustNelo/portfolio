@@ -28,13 +28,13 @@ export type QualityLevel = 'low' | 'medium' | 'high'
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type {
-  PersonalInfo,
+  Profile,
   Social,
   Skill,
   Experience,
   Education,
   TimelineItem
-} from '@/data/about'
+} from '@/lib/validations/about'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUPABASE / PROJECT TYPES

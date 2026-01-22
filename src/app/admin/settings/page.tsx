@@ -1,50 +1,61 @@
-export default function AdminSettingsPage() {
+import { getProfile, getSocials, getSkills, getTimeline } from '@/lib/actions/about'
+import ProfileForm from './_components/ProfileForm'
+import SocialsManager from './_components/SocialsManager'
+import SkillsManager from './_components/SkillsManager'
+import TimelineManager from './_components/TimelineManager'
+
+export default async function AdminSettingsPage() {
+  const [profile, socials, skills, timeline] = await Promise.all([
+    getProfile(),
+    getSocials(),
+    getSkills(),
+    getTimeline(),
+  ])
+
   return (
     <div className="space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
         <h1 className="font-heading text-2xl lg:text-3xl text-primary uppercase tracking-tight drop-shadow-lg">
-          Paramètres
+          Paramètres Généraux
         </h1>
         <p className="font-mono text-xs lg:text-sm text-white/50 mt-1">
-          Configuration de votre portfolio
+          Gérez votre profil, compétences et parcours
         </p>
       </div>
 
       {/* Settings sections */}
-      <div className="grid gap-4 lg:gap-6 max-w-2xl">
+      <div className="grid gap-4 lg:gap-6 max-w-3xl">
         {/* Profile */}
         <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 lg:p-6 space-y-4">
           <h2 className="font-mono text-xs text-white/60 uppercase tracking-widest">
-            Profil
+            Informations personnelles
           </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-                Nom d&apos;affichage
-              </label>
-              <input
-                type="text"
-                placeholder="Votre nom"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/40 focus:outline-none transition-colors cursor-not-allowed"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="votre@email.com"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/40 focus:outline-none transition-colors cursor-not-allowed"
-                disabled
-              />
-            </div>
-          </div>
-          <p className="font-mono text-[10px] text-white/30">
-            La modification du profil sera disponible dans une prochaine version.
-          </p>
+          <ProfileForm profile={profile} />
+        </section>
+
+        {/* Socials */}
+        <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 lg:p-6 space-y-4">
+          <h2 className="font-mono text-xs text-white/60 uppercase tracking-widest">
+            Liens sociaux
+          </h2>
+          <SocialsManager initialSocials={socials} />
+        </section>
+
+        {/* Skills */}
+        <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 lg:p-6 space-y-4">
+          <h2 className="font-mono text-xs text-white/60 uppercase tracking-widest">
+            Compétences
+          </h2>
+          <SkillsManager initialSkills={skills} />
+        </section>
+
+        {/* Timeline */}
+        <section className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 lg:p-6 space-y-4">
+          <h2 className="font-mono text-xs text-white/60 uppercase tracking-widest">
+            Parcours
+          </h2>
+          <TimelineManager initialTimeline={timeline} />
         </section>
 
         {/* Danger Zone */}

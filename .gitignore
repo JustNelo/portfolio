@@ -46,3 +46,6 @@ supabase/seed.sql
 
 # windsurf
 .windsurfrules
+
+# # supabase
+# supabase/*

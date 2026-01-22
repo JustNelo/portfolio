@@ -1,12 +1,18 @@
 'use client'
 
-import { skills, experiences, education, type Experience, type Education } from '@/data/about'
 import { FadeIn, DecodeText } from '@/components/animations'
+import type { Skill, Experience, Education, TimelineItem } from '@/lib/validations/about'
+
+interface AboutContentProps {
+  skills: Skill[]
+  experiences: TimelineItem[]
+  education: TimelineItem[]
+}
 
 type TimelineType = 'EXP' | 'EDU'
 
 interface TimelineEntryProps {
-  item: Experience | Education
+  item: TimelineItem
   index: number
   type: TimelineType
 }
@@ -28,8 +34,12 @@ function calculateYears(period: string): number {
   return isNaN(end - start) ? 0 : end - start
 }
 
-function isExperience(item: Experience | Education): item is Experience {
-  return 'title' in item && 'company' in item
+function isExperience(item: TimelineItem): item is Experience {
+  return item.type === 'experience'
+}
+
+function isEducation(item: TimelineItem): item is Education {
+  return item.type === 'education'
 }
 
 function TimelineEntry({ item, index, type }: TimelineEntryProps) {
@@ -100,7 +110,7 @@ function ConnectorLine({ index }: { index: number }) {
   return <div className={`absolute top-0 h-px bg-white/40 ${width} ${position}`} />
 }
 
-export default function AboutContent() {
+export default function AboutContent({ skills, experiences, education }: AboutContentProps) {
   return (
     <div className="flex flex-col pt-4 sm:pt-16 pb-8 sm:pb-16">
       
@@ -121,7 +131,7 @@ export default function AboutContent() {
           />
 
           <div className="sm:ml-6 md:ml-10 flex flex-wrap gap-2 sm:gap-3">
-            {skills.map((skill, index) => (
+            {skills.map((skill: Skill, index: number) => (
               <FadeIn 
                 key={skill.category} 
                 className="border border-white/20 p-2 sm:p-3 flex-1 min-w-35 sm:min-w-0 sm:flex-none"
@@ -135,7 +145,7 @@ export default function AboutContent() {
                   delay={0.15 + index * 0.08}
                 />
                 <div className="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-1">
-                  {skill.items.map((item) => (
+                  {skill.items.map((item: string) => (
                     <span key={item} className="font-mono text-[10px] sm:text-xs text-white hover:text-white/60 transition-opacity">
                       {item}
                     </span>
@@ -158,8 +168,8 @@ export default function AboutContent() {
           />
         </FadeIn>
         <div>
-          {experiences.map((exp, i) => (
-            <TimelineEntry key={i} item={exp} index={i} type="EXP" />
+          {experiences.filter(isExperience).map((exp, i) => (
+            <TimelineEntry key={exp.id} item={exp} index={i} type="EXP" />
           ))}
         </div>
       </section>
@@ -175,8 +185,8 @@ export default function AboutContent() {
           />
         </FadeIn>
         <div>
-          {education.map((edu, i) => (
-            <TimelineEntry key={i} item={edu} index={i} type="EDU" />
+          {education.filter(isEducation).map((edu, i) => (
+            <TimelineEntry key={edu.id} item={edu} index={i} type="EDU" />
           ))}
         </div>
       </section>
