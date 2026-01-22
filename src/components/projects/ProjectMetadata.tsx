@@ -1,24 +1,29 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { FadeIn } from '@/components/animations'
 import type { Project } from '@/types'
 
 type MetadataProps = Pick<Project, 'agency' | 'client' | 'responsibilities' | 'development'>
 
 export default function ProjectMetadata({ agency, client, responsibilities, development }: MetadataProps) {
+  const t = useTranslations('projectDetail')
+
   return (
     <FadeIn delay={0.2}>
       <div className="mt-8 lg:mt-12 space-y-4">
         {agency && (
-          <MetadataItem label="Agency" value={agency} />
+          <MetadataItem label={t('agency')} value={agency} />
         )}
 
         {client && (
-          <MetadataItem label="Client" value={client} />
+          <MetadataItem label={t('client')} value={client} />
         )}
 
         {responsibilities && responsibilities.length > 0 && (
           <div>
             <span className="font-mono text-[10px] text-muted uppercase tracking-widest block mb-1">
-              Responsibilities
+              {t('responsibilities')}
             </span>
             <ul className="space-y-0.5">
               {responsibilities.map((resp) => (
@@ -31,7 +36,7 @@ export default function ProjectMetadata({ agency, client, responsibilities, deve
         )}
 
         {development && (
-          <MetadataItem label="Development" value={development} />
+          <MetadataItem label={t('development')} value={development} />
         )}
       </div>
     </FadeIn>

@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "title": "Portfolio - Léon Gallet",
+    "description": "From sapiens to Ludens."
+  },
+  "nav": {
+    "projects": "Projects",
+    "about": "About",
+    "backToIndex": "Back to index"
+  },
+  "home": {
+    "title": "Home"
+  },
+  "about": {
+    "skills": "SKILLS",
+    "skillsManifest": "SKILLS_MANIFEST",
+    "experience": "EXPERIENCE",
+    "education": "EDUCATION"
+  },
+  "projects": {
+    "title": "PROJECTS",
+    "selectedWorks": "Selected works from {range}",
+    "noMedia": "No media"
+  },
+  "projectDetail": {
+    "agency": "Agency",
+    "client": "Client",
+    "responsibilities": "Responsibilities",
+    "development": "Development"
+  },
+  "login": {
+    "title": "Admin Login",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in..."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred"
+  }
+}

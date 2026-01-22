@@ -1,5 +1,6 @@
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { FadeIn } from '@/components/animations'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export interface NavLinkProps {
   href: string
@@ -44,12 +45,17 @@ export interface NavBarProps {
 export function NavBar({ links }: NavBarProps) {
   return (
     <nav className="fixed top-4 sm:top-6 lg:top-8 left-4 sm:left-6 lg:left-8 right-4 sm:right-6 lg:right-8 z-50 flex justify-between items-center pointer-events-none">
-      <div className="flex gap-3 pointer-events-auto">
+      <div className="flex gap-3 items-center pointer-events-auto">
         {links.filter(l => l.position === 'left').map((link) => (
           <NavLink key={link.href} {...link} />
         ))}
       </div>
-      <div className="flex gap-3 pointer-events-auto">
+      <div className="flex gap-3 items-center pointer-events-auto">
+        <FadeIn delay={0.1}>
+          <div className="border border-primary/30 px-3 py-2 bg-background/80 backdrop-blur-md">
+            <LanguageSwitcher />
+          </div>
+        </FadeIn>
         {links.filter(l => l.position !== 'left').map((link) => (
           <NavLink key={link.href} {...link} />
         ))}

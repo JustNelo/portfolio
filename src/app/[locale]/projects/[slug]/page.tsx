@@ -1,3 +1,4 @@
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getProjectBySlug } from '@/services/project.service'
 import { notFound } from 'next/navigation'
 import { FadeIn } from '@/components/animations'
@@ -8,12 +9,15 @@ import {
   MediaGallery
 } from '@/components/projects'
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const { slug } = await params
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
+};
+
+export default async function ProjectPage({ params }: Props) {
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
+  
+  const t = await getTranslations('nav');
   const project = await getProjectBySlug(slug)
 
   if (!project) {
@@ -26,7 +30,7 @@ export default async function ProjectPage({
     <main className="relative min-h-screen">
         <NavBar 
           links={[
-            { href: '/projects', label: "Retour à l'index", position: 'right' },
+            { href: '/projects', label: t('backToIndex'), position: 'right' },
           ]} 
         />
 

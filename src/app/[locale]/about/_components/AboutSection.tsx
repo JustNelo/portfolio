@@ -1,8 +1,11 @@
-import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from '@/app/about/_components'
+import { getTranslations } from 'next-intl/server';
+import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from '@/app/[locale]/about/_components'
 import { NavBar } from '@/components/ui'
 import { getProfile, getSocials, getSkills, getExperiences, getEducation } from '@/lib/actions/about'
 
 export default async function AboutSection(): Promise<React.JSX.Element> {
+  const t = await getTranslations('nav');
+  
   const [profile, socials, skills, experiences, education] = await Promise.all([
     getProfile(),
     getSocials(),
@@ -15,7 +18,7 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
     <section className="relative h-screen overflow-hidden">
       <NavBar 
         links={[
-          { href: '/projects', label: 'Projets', position: 'right' },
+          { href: '/projects', label: t('projects'), position: 'right' },
         ]} 
       />
 

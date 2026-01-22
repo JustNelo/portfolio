@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { DecodeText } from '@/components/animations'
+import { Link } from '@/lib/i18n/navigation'
 import type { Project } from '@/types'
 
 interface ProjectListProps {

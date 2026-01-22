@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  const t = useTranslations('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -36,13 +38,13 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <h1 className="font-heading text-4xl text-primary uppercase tracking-tight mb-8">
-          Admin Login
+          {t('title')}
         </h1>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-              Email
+              {t('email')}
             </label>
             <input
               type="email"
@@ -55,7 +57,7 @@ export default function LoginPage() {
 
           <div>
             <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-              Mot de passe
+              {t('password')}
             </label>
             <input
               type="password"
@@ -75,7 +77,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-primary/90 backdrop-blur-sm text-background font-mono text-sm uppercase tracking-widest py-4 rounded-xl hover:bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? t('loading') : t('submit')}
           </button>
         </form>
       </div>

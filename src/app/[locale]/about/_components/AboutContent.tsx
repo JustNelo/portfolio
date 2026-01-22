@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { FadeIn, DecodeText } from '@/components/animations'
 import type { Skill, Experience, Education, TimelineItem } from '@/lib/validations/about'
 
@@ -111,20 +112,22 @@ function ConnectorLine({ index }: { index: number }) {
 }
 
 export default function AboutContent({ skills, experiences, education }: AboutContentProps) {
+  const t = useTranslations('about')
+
   return (
     <div className="flex flex-col pt-4 sm:pt-16 pb-8 sm:pb-16">
       
       <section className="relative py-4 sm:py-12 mb-4 sm:mb-8 px-4 sm:px-0">
         <FadeIn className="relative">
           <DecodeText
-            text="SKILLS_MANIFEST"
+            text={t('skillsManifest')}
             as="div"
             className="hidden sm:block absolute -left-2 md:-left-6 top-0 text-[9px] text-white/30 tracking-[0.4em] uppercase"
             style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
             duration={0.6}
           />
           <DecodeText
-            text="SKILLS"
+            text={t('skills')}
             as="div"
             className="sm:hidden text-[10px] text-white/30 tracking-[0.3em] uppercase mb-4"
             duration={0.6}
@@ -161,7 +164,7 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
         <FadeIn className="relative mb-4 sm:mb-12 pl-4">
           <div className="absolute left-0 top-1/2 w-px h-6 sm:h-8 -translate-y-1/2 bg-white/40" />
           <DecodeText
-            text="EXPERIENCE"
+            text={t('experience')}
             as="h2"
             className="font-heading text-2xl sm:text-3xl md:text-4xl text-white tracking-wide"
             duration={0.6}
@@ -178,7 +181,7 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
         <FadeIn className="relative mb-4 sm:mb-12 pl-4">
           <div className="absolute left-0 top-0 w-px h-full bg-white/40" />
           <DecodeText
-            text="EDUCATION"
+            text={t('education')}
             as="h2"
             className="font-heading text-2xl sm:text-3xl md:text-4xl text-white tracking-wide"
             duration={0.6}
