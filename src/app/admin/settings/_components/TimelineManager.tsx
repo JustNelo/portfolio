@@ -27,8 +27,10 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
     formData.set('order', String(timeline.length))
 
     const result = await addTimelineItem(formData)
-    if (result.success) {
-      window.location.reload()
+    if (result.success && result.data) {
+      setTimeline([...timeline, result.data])
+      setAddingType(null)
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -46,8 +48,24 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
 
     const result = await updateTimelineItem(formData)
     if (result.success) {
+      const type = formData.get('type') as 'experience' | 'education'
+      setTimeline(timeline.map(t => t.id === item.id ? {
+        ...t,
+        period: formData.get('period') as string,
+        description: (formData.get('description') as string) || '',
+        descriptionEn: (formData.get('description_en') as string) || '',
+        ...(type === 'experience' ? {
+          title: formData.get('title') as string,
+          company: formData.get('company') as string,
+          titleEn: (formData.get('title_en') as string) || '',
+        } : {
+          degree: formData.get('degree') as string,
+          school: formData.get('school') as string,
+          degreeEn: (formData.get('degree_en') as string) || '',
+        }),
+      } : t))
       setEditingId(null)
-      window.location.reload()
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -79,7 +97,7 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
           name="title"
           defaultValue={experience?.title || ''}
           className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
-          placeholder="Titre du poste"
+          placeholder="Titre du poste (FR)"
           required
         />
         <input
@@ -93,6 +111,13 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
       </div>
       <input
         type="text"
+        name="title_en"
+        defaultValue={experience?.titleEn || ''}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
+        placeholder="Job title (EN)"
+      />
+      <input
+        type="text"
         name="period"
         defaultValue={experience?.period || ''}
         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
@@ -104,7 +129,14 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
         defaultValue={experience?.description || ''}
         rows={2}
         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all resize-none"
-        placeholder="Description..."
+        placeholder="Description (FR)..."
+      />
+      <textarea
+        name="description_en"
+        defaultValue={experience?.descriptionEn || ''}
+        rows={2}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all resize-none"
+        placeholder="Description (EN)..."
       />
       <div className="flex gap-2">
         <button
@@ -140,7 +172,7 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
           name="degree"
           defaultValue={edu?.degree || ''}
           className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
-          placeholder="Diplôme"
+          placeholder="Diplôme (FR)"
           required
         />
         <input
@@ -154,6 +186,13 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
       </div>
       <input
         type="text"
+        name="degree_en"
+        defaultValue={edu?.degreeEn || ''}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
+        placeholder="Degree (EN)"
+      />
+      <input
+        type="text"
         name="period"
         defaultValue={edu?.period || ''}
         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
@@ -165,7 +204,14 @@ export default function TimelineManager({ initialTimeline }: TimelineManagerProp
         defaultValue={edu?.description || ''}
         rows={2}
         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all resize-none"
-        placeholder="Description..."
+        placeholder="Description (FR)..."
+      />
+      <textarea
+        name="description_en"
+        defaultValue={edu?.descriptionEn || ''}
+        rows={2}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all resize-none"
+        placeholder="Description (EN)..."
       />
       <div className="flex gap-2">
         <button

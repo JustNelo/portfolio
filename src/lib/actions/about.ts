@@ -1,6 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { 
+  revalidateGroup, 
+  type ActionResponse 
+} from './helpers'
+
 import {
   profileSchema,
   socialSchema,
@@ -22,12 +27,6 @@ import {
   type SkillRow,
   type TimelineRow,
 } from '@/lib/validations/about'
-import { revalidatePath } from 'next/cache'
-
-export interface ActionResponse {
-  success: boolean
-  message: string
-}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROFILE ACTIONS
@@ -69,6 +68,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
     bio_muted: (formData.get('bio_muted') as string) || '',
     cta_text: (formData.get('cta_text') as string) || '',
     cta_href: (formData.get('cta_href') as string) || '',
+    bio_en: JSON.parse((formData.get('bio_en') as string) || '[]'),
+    bio_muted_en: (formData.get('bio_muted_en') as string) || '',
+    cta_text_en: (formData.get('cta_text_en') as string) || '',
   }
 
   const validationResult = profileSchema.safeParse(rawData)
@@ -97,6 +99,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
         bio_muted: validatedData.bio_muted,
         cta_text: validatedData.cta_text,
         cta_href: validatedData.cta_href,
+        bio_en: validatedData.bio_en,
+        bio_muted_en: validatedData.bio_muted_en,
+        cta_text_en: validatedData.cta_text_en,
       })
       .eq('id', existingProfile.id)
 
@@ -113,6 +118,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
       bio_muted: validatedData.bio_muted,
       cta_text: validatedData.cta_text,
       cta_href: validatedData.cta_href,
+      bio_en: validatedData.bio_en,
+      bio_muted_en: validatedData.bio_muted_en,
+      cta_text_en: validatedData.cta_text_en,
     })
 
     if (error) {
@@ -121,9 +129,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
     }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Profil mis à jour avec succès!' }
 }
@@ -148,7 +154,7 @@ export async function getSocials(): Promise<Social[]> {
   return (data as SocialRow[]).map(transformSocial)
 }
 
-export async function addSocial(formData: FormData): Promise<ActionResponse> {
+export async function addSocial(formData: FormData): Promise<ActionResponse<Social>> {
   const supabase = await createClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -168,18 +174,16 @@ export async function addSocial(formData: FormData): Promise<ActionResponse> {
     return { success: false, message: `Validation échouée: ${errors}` }
   }
 
-  const { error } = await supabase.from('socials').insert(validationResult.data)
+  const { data, error } = await supabase.from('socials').insert(validationResult.data).select().single()
 
   if (error) {
     console.error('Social insert error:', error)
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
-  return { success: true, message: 'Lien social ajouté!' }
+  return { success: true, message: 'Lien social ajouté!', data: transformSocial(data as SocialRow) }
 }
 
 export async function updateSocial(formData: FormData): Promise<ActionResponse> {
@@ -215,9 +219,7 @@ export async function updateSocial(formData: FormData): Promise<ActionResponse> 
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Lien social mis à jour!' }
 }
@@ -237,9 +239,7 @@ export async function deleteSocial(id: string): Promise<ActionResponse> {
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Lien social supprimé!' }
 }
@@ -264,7 +264,7 @@ export async function getSkills(): Promise<Skill[]> {
   return (data as SkillRow[]).map(transformSkill)
 }
 
-export async function addSkill(formData: FormData): Promise<ActionResponse> {
+export async function addSkill(formData: FormData): Promise<ActionResponse<Skill>> {
   const supabase = await createClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -276,6 +276,7 @@ export async function addSkill(formData: FormData): Promise<ActionResponse> {
     category: formData.get('category') as string,
     items: JSON.parse((formData.get('items') as string) || '[]'),
     order: parseInt(formData.get('order') as string, 10) || 0,
+    category_en: (formData.get('category_en') as string) || '',
   }
 
   const validationResult = skillSchema.safeParse(rawData)
@@ -284,18 +285,16 @@ export async function addSkill(formData: FormData): Promise<ActionResponse> {
     return { success: false, message: `Validation échouée: ${errors}` }
   }
 
-  const { error } = await supabase.from('skills').insert(validationResult.data)
+  const { data, error } = await supabase.from('skills').insert(validationResult.data).select().single()
 
   if (error) {
     console.error('Skill insert error:', error)
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
-  return { success: true, message: 'Compétence ajoutée!' }
+  return { success: true, message: 'Compétence ajoutée!', data: transformSkill(data as SkillRow) }
 }
 
 export async function updateSkill(formData: FormData): Promise<ActionResponse> {
@@ -311,6 +310,7 @@ export async function updateSkill(formData: FormData): Promise<ActionResponse> {
     category: formData.get('category') as string,
     items: JSON.parse((formData.get('items') as string) || '[]'),
     order: parseInt(formData.get('order') as string, 10) || 0,
+    category_en: (formData.get('category_en') as string) || '',
   }
 
   const validationResult = updateSkillSchema.safeParse(rawData)
@@ -331,9 +331,7 @@ export async function updateSkill(formData: FormData): Promise<ActionResponse> {
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Compétence mise à jour!' }
 }
@@ -353,9 +351,7 @@ export async function deleteSkill(id: string): Promise<ActionResponse> {
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Compétence supprimée!' }
 }
@@ -414,7 +410,7 @@ export async function getEducation(): Promise<TimelineItem[]> {
   return (data as TimelineRow[]).map(transformTimeline)
 }
 
-export async function addTimelineItem(formData: FormData): Promise<ActionResponse> {
+export async function addTimelineItem(formData: FormData): Promise<ActionResponse<TimelineItem>> {
   const supabase = await createClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -432,6 +428,8 @@ export async function addTimelineItem(formData: FormData): Promise<ActionRespons
         period: formData.get('period') as string,
         description: (formData.get('description') as string) || '',
         order: parseInt(formData.get('order') as string, 10) || 0,
+        title_en: (formData.get('title_en') as string) || '',
+        description_en: (formData.get('description_en') as string) || '',
       }
     : {
         type: 'education' as const,
@@ -440,6 +438,8 @@ export async function addTimelineItem(formData: FormData): Promise<ActionRespons
         period: formData.get('period') as string,
         description: (formData.get('description') as string) || '',
         order: parseInt(formData.get('order') as string, 10) || 0,
+        degree_en: (formData.get('degree_en') as string) || '',
+        description_en: (formData.get('description_en') as string) || '',
       }
 
   const validationResult = timelineSchema.safeParse(rawData)
@@ -448,18 +448,16 @@ export async function addTimelineItem(formData: FormData): Promise<ActionRespons
     return { success: false, message: `Validation échouée: ${errors}` }
   }
 
-  const { error } = await supabase.from('timeline').insert(validationResult.data)
+  const { data, error } = await supabase.from('timeline').insert(validationResult.data).select().single()
 
   if (error) {
     console.error('Timeline insert error:', error)
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
-  return { success: true, message: 'Élément ajouté au parcours!' }
+  return { success: true, message: 'Élément ajouté au parcours!', data: transformTimeline(data as TimelineRow) }
 }
 
 export async function updateTimelineItem(formData: FormData): Promise<ActionResponse> {
@@ -482,6 +480,8 @@ export async function updateTimelineItem(formData: FormData): Promise<ActionResp
         period: formData.get('period') as string,
         description: (formData.get('description') as string) || '',
         order: parseInt(formData.get('order') as string, 10) || 0,
+        title_en: (formData.get('title_en') as string) || '',
+        description_en: (formData.get('description_en') as string) || '',
       }
     : {
         id,
@@ -491,6 +491,8 @@ export async function updateTimelineItem(formData: FormData): Promise<ActionResp
         period: formData.get('period') as string,
         description: (formData.get('description') as string) || '',
         order: parseInt(formData.get('order') as string, 10) || 0,
+        degree_en: (formData.get('degree_en') as string) || '',
+        description_en: (formData.get('description_en') as string) || '',
       }
 
   const validationResult = updateTimelineSchema.safeParse(rawData)
@@ -511,9 +513,7 @@ export async function updateTimelineItem(formData: FormData): Promise<ActionResp
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Élément mis à jour!' }
 }
@@ -533,9 +533,7 @@ export async function deleteTimelineItem(id: string): Promise<ActionResponse> {
     return { success: false, message: `Erreur: ${error.message}` }
   }
 
-  revalidatePath('/')
-  revalidatePath('/about')
-  revalidatePath('/admin/settings')
+  await revalidateGroup('about')
 
   return { success: true, message: 'Élément supprimé du parcours!' }
 }

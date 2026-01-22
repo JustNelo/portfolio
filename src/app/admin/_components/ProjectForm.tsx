@@ -16,6 +16,8 @@ export interface MediaPreview {
   isExisting?: boolean
 }
 
+type Lang = 'fr' | 'en'
+
 interface ProjectFormProps {
   mode: 'create' | 'edit'
   project?: ProjectWithMedias
@@ -25,8 +27,9 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const { compress, isCompressing, ProgressBar } = useImageCompression()
+  const [activeLang, setActiveLang] = useState<Lang>('fr')
 
-  // Form state
+  // Form state - French (default)
   const [title, setTitle] = useState(project?.title || '')
   const [slug, setSlug] = useState(project?.slug || '')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(mode === 'edit')
@@ -41,6 +44,14 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
   const [externalUrl, setExternalUrl] = useState(project?.external_url || '')
   const [medias, setMedias] = useState<MediaPreview[]>([])
   const [isDragging, setIsDragging] = useState(false)
+
+  // Form state - English
+  const [titleEn, setTitleEn] = useState(project?.title_en || '')
+  const [descriptionEn, setDescriptionEn] = useState(project?.description_en || '')
+  const [categoryEn, setCategoryEn] = useState(project?.category_en || '')
+  const [responsibilitiesEn, setResponsibilitiesEn] = useState<string[]>(project?.responsibilities_en || [])
+  const [responsibilityInputEn, setResponsibilityInputEn] = useState('')
+  const [developmentEn, setDevelopmentEn] = useState(project?.development_en || '')
 
   // Initialize medias from project
   useEffect(() => {
@@ -69,15 +80,26 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
     setSlug(value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
   }
 
-  const addResponsibility = useCallback(() => {
-    if (responsibilityInput.trim()) {
-      setResponsibilities((prev) => [...prev, responsibilityInput.trim()])
-      setResponsibilityInput('')
+  const addResponsibility = useCallback((lang: Lang) => {
+    if (lang === 'fr') {
+      if (responsibilityInput.trim()) {
+        setResponsibilities((prev) => [...prev, responsibilityInput.trim()])
+        setResponsibilityInput('')
+      }
+    } else {
+      if (responsibilityInputEn.trim()) {
+        setResponsibilitiesEn((prev) => [...prev, responsibilityInputEn.trim()])
+        setResponsibilityInputEn('')
+      }
     }
-  }, [responsibilityInput])
+  }, [responsibilityInput, responsibilityInputEn])
 
-  const removeResponsibility = useCallback((index: number) => {
-    setResponsibilities((prev) => prev.filter((_, i) => i !== index))
+  const removeResponsibility = useCallback((index: number, lang: Lang) => {
+    if (lang === 'fr') {
+      setResponsibilities((prev) => prev.filter((_, i) => i !== index))
+    } else {
+      setResponsibilitiesEn((prev) => prev.filter((_, i) => i !== index))
+    }
   }, [])
 
   const handleFiles = useCallback(async (files: FileList | null) => {
@@ -160,6 +182,12 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
     formData.append('responsibilities', JSON.stringify(responsibilities))
     formData.append('development', development)
     formData.append('external_url', externalUrl)
+    // English translations
+    formData.append('title_en', titleEn)
+    formData.append('description_en', descriptionEn)
+    formData.append('category_en', categoryEn)
+    formData.append('responsibilities_en', JSON.stringify(responsibilitiesEn))
+    formData.append('development_en', developmentEn)
 
     if (mode === 'create') {
       // Add all new medias
@@ -230,18 +258,45 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
+      {/* Language Tabs */}
+      <div className="flex gap-2 border-b border-white/10 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveLang('fr')}
+          className={`px-4 py-2 font-mono text-xs uppercase tracking-widest rounded-t-lg transition-all ${
+            activeLang === 'fr'
+              ? 'bg-primary/20 text-primary border-b-2 border-primary'
+              : 'text-white/50 hover:text-white/80'
+          }`}
+        >
+          🇫🇷 Français
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveLang('en')}
+          className={`px-4 py-2 font-mono text-xs uppercase tracking-widest rounded-t-lg transition-all ${
+            activeLang === 'en'
+              ? 'bg-primary/20 text-primary border-b-2 border-primary'
+              : 'text-white/50 hover:text-white/80'
+          }`}
+        >
+          🇬🇧 English
+        </button>
+      </div>
+
       {/* Title & Slug */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
           <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-            Titre *
+            Titre {activeLang === 'en' && '(EN)'} *
           </label>
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={activeLang === 'fr' ? title : titleEn}
+            onChange={(e) => activeLang === 'fr' ? setTitle(e.target.value) : setTitleEn(e.target.value)}
             className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
-            required
+            required={activeLang === 'fr'}
+            placeholder={activeLang === 'en' ? 'English title (optional)' : ''}
           />
         </div>
         <div>
@@ -254,6 +309,7 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
             onChange={(e) => handleSlugChange(e.target.value)}
             className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
             required
+            disabled={activeLang === 'en'}
           />
         </div>
       </div>
@@ -261,14 +317,15 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
       {/* Description */}
       <div>
         <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-          Description *
+          Description {activeLang === 'en' && '(EN)'} *
         </label>
         <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={activeLang === 'fr' ? description : descriptionEn}
+          onChange={(e) => activeLang === 'fr' ? setDescription(e.target.value) : setDescriptionEn(e.target.value)}
           rows={4}
           className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 resize-none placeholder:text-white/30"
-          required
+          required={activeLang === 'fr'}
+          placeholder={activeLang === 'en' ? 'English description (optional)' : ''}
         />
       </div>
 
@@ -290,15 +347,15 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
         </div>
         <div>
           <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-            Catégorie *
+            Catégorie {activeLang === 'en' && '(EN)'} *
           </label>
           <input
             type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Web Design, Branding, etc."
+            value={activeLang === 'fr' ? category : categoryEn}
+            onChange={(e) => activeLang === 'fr' ? setCategory(e.target.value) : setCategoryEn(e.target.value)}
+            placeholder={activeLang === 'en' ? 'Category (EN)' : 'Web Design, Branding, etc.'}
             className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
-            required
+            required={activeLang === 'fr'}
           />
         </div>
       </div>
@@ -332,33 +389,33 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
       {/* Responsibilities */}
       <div>
         <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-          Responsabilités
+          Responsabilités {activeLang === 'en' && '(EN)'}
         </label>
         <div className="flex gap-2 mb-3">
           <input
             type="text"
-            value={responsibilityInput}
-            onChange={(e) => setResponsibilityInput(e.target.value)}
+            value={activeLang === 'fr' ? responsibilityInput : responsibilityInputEn}
+            onChange={(e) => activeLang === 'fr' ? setResponsibilityInput(e.target.value) : setResponsibilityInputEn(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
-                addResponsibility()
+                addResponsibility(activeLang)
               }
             }}
-            placeholder="Ex: Creative Direction"
+            placeholder={activeLang === 'en' ? 'Ex: Creative Direction (EN)' : 'Ex: Creative Direction'}
             className="flex-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
           <button
             type="button"
-            onClick={addResponsibility}
+            onClick={() => addResponsibility(activeLang)}
             className="px-5 py-3.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-lg font-mono text-sm text-primary hover:bg-primary/20 hover:border-primary/30 transition-all duration-200"
           >
             +
           </button>
         </div>
-        {responsibilities.length > 0 && (
+        {(activeLang === 'fr' ? responsibilities : responsibilitiesEn).length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {responsibilities.map((resp, index) => (
+            {(activeLang === 'fr' ? responsibilities : responsibilitiesEn).map((resp, index) => (
               <span
                 key={index}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-xl border border-white/10 rounded-lg font-mono text-xs text-white/80"
@@ -366,7 +423,7 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
                 {resp}
                 <button
                   type="button"
-                  onClick={() => removeResponsibility(index)}
+                  onClick={() => removeResponsibility(index, activeLang)}
                   className="text-white/40 hover:text-red-400 transition-colors"
                 >
                   ×
@@ -381,13 +438,13 @@ export default function ProjectForm({ mode, project }: ProjectFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
           <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
-            Développement
+            Développement {activeLang === 'en' && '(EN)'}
           </label>
           <input
             type="text"
-            value={development}
-            onChange={(e) => setDevelopment(e.target.value)}
-            placeholder="Ex: Darkroom Engineering"
+            value={activeLang === 'fr' ? development : developmentEn}
+            onChange={(e) => activeLang === 'fr' ? setDevelopment(e.target.value) : setDevelopmentEn(e.target.value)}
+            placeholder={activeLang === 'en' ? 'Ex: Darkroom Engineering (EN)' : 'Ex: Darkroom Engineering'}
             className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3.5 font-mono text-sm text-white/90 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all duration-200 placeholder:text-white/30"
           />
         </div>

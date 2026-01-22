@@ -3,12 +3,17 @@ import type { Profile } from '@/lib/validations/about'
 
 interface AboutHeaderProps {
   profile: Profile | null
+  locale: string
 }
 
-export default function AboutHeader({ profile }: AboutHeaderProps) {
+export default function AboutHeader({ profile, locale }: AboutHeaderProps) {
   if (!profile) {
     return null
   }
+
+  // Use English translations if locale is 'en' and translations exist
+  const bio = locale === 'en' && profile.bioEn?.length ? profile.bioEn : profile.bio
+  const ctaText = locale === 'en' && profile.ctaTextEn ? profile.ctaTextEn : profile.ctaText
 
   return (
     <div>
@@ -34,7 +39,7 @@ export default function AboutHeader({ profile }: AboutHeaderProps) {
 
         <FadeIn delay={0.4}>
         <div className="space-y-3 sm:space-y-4 text-secondary text-sm sm:text-base leading-relaxed pl-0 sm:pl-4 md:pl-16 lg:pl-24 xl:pl-38 [&>p:last-of-type]:mb-0 max-w-2xl">
-          {profile.bio.map((paragraph, index) => (
+          {bio.map((paragraph, index) => (
             <DecodeText key={index} text={paragraph} as="p" duration={0.7} delay={0.2} />
           ))}
 
@@ -42,7 +47,7 @@ export default function AboutHeader({ profile }: AboutHeaderProps) {
             href={profile.ctaHref}
             className="inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 bg-accent text-accent-foreground font-medium text-sm sm:text-base uppercase tracking-wider hover:opacity-80 transition-all w-fit mt-6 sm:mt-8"
           >
-            <DecodeText text={profile.ctaText} duration={0.7} delay={0.2} />
+            <DecodeText text={ctaText} duration={0.7} delay={0.2} />
           </a>
         </div>
         </FadeIn>

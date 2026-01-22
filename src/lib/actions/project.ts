@@ -23,6 +23,12 @@ export interface ProjectWithMedias {
   development: string | null
   external_url: string | null
   created_at: string
+  // English translations
+  title_en: string | null
+  description_en: string | null
+  category_en: string | null
+  responsibilities_en: string[]
+  development_en: string | null
   project_medias: {
     id: string
     url: string
@@ -52,6 +58,12 @@ export async function createProject(formData: FormData): Promise<ActionResponse>
     responsibilities: JSON.parse((formData.get('responsibilities') as string) || '[]'),
     development: (formData.get('development') as string) || null,
     external_url: (formData.get('external_url') as string) || null,
+    // English translations
+    title_en: (formData.get('title_en') as string) || '',
+    description_en: (formData.get('description_en') as string) || '',
+    category_en: (formData.get('category_en') as string) || '',
+    responsibilities_en: JSON.parse((formData.get('responsibilities_en') as string) || '[]'),
+    development_en: (formData.get('development_en') as string) || '',
   }
 
   // Validate form data with Zod
@@ -118,6 +130,12 @@ export async function createProject(formData: FormData): Promise<ActionResponse>
       responsibilities: validatedData.responsibilities || [],
       development: validatedData.development || null,
       external_url: validatedData.external_url || null,
+      // English translations
+      title_en: validatedData.title_en || null,
+      description_en: validatedData.description_en || null,
+      category_en: validatedData.category_en || null,
+      responsibilities_en: validatedData.responsibilities_en || [],
+      development_en: validatedData.development_en || null,
     })
     .select('id')
     .single()
@@ -249,6 +267,12 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
     responsibilities: JSON.parse((formData.get('responsibilities') as string) || '[]'),
     development: (formData.get('development') as string) || null,
     external_url: (formData.get('external_url') as string) || null,
+    // English translations
+    title_en: (formData.get('title_en') as string) || '',
+    description_en: (formData.get('description_en') as string) || '',
+    category_en: (formData.get('category_en') as string) || '',
+    responsibilities_en: JSON.parse((formData.get('responsibilities_en') as string) || '[]'),
+    development_en: (formData.get('development_en') as string) || '',
   }
 
   // Validate form data with Zod
@@ -362,6 +386,12 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
       responsibilities: validatedData.responsibilities || [],
       development: validatedData.development || null,
       external_url: validatedData.external_url || null,
+      // English translations
+      title_en: validatedData.title_en || null,
+      description_en: validatedData.description_en || null,
+      category_en: validatedData.category_en || null,
+      responsibilities_en: validatedData.responsibilities_en || [],
+      development_en: validatedData.development_en || null,
     })
     .eq('id', id)
 

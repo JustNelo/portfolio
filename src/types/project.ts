@@ -28,6 +28,12 @@ export interface Project {
   responsibilities?: string[] // ['Creative Direction', 'UX Design', ...]
   development?: string
   external_url?: string
+  // English translations
+  title_en?: string
+  description_en?: string
+  category_en?: string
+  responsibilities_en?: string[]
+  development_en?: string
   // Timestamps
   created_at?: string
   // Relations (populated via join)

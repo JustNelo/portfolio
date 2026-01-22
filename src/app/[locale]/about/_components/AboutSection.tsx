@@ -1,10 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { AboutHeader, AboutFooter, AboutContent, InfiniteScroll } from '@/app/[locale]/about/_components'
 import { NavBar } from '@/components/ui'
 import { getProfile, getSocials, getSkills, getExperiences, getEducation } from '@/lib/actions/about'
 
 export default async function AboutSection(): Promise<React.JSX.Element> {
   const t = await getTranslations('nav');
+  const locale = await getLocale();
   
   const [profile, socials, skills, experiences, education] = await Promise.all([
     getProfile(),
@@ -25,7 +26,7 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
       <div className="hidden sm:block fixed top-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
         <div className="grid grid-cols-24 gap-8 md:gap-16">
           <div className="col-span-12 md:col-span-11 lg:col-span-10 pointer-events-auto">
-            <AboutHeader profile={profile} />
+            <AboutHeader profile={profile} locale={locale} />
           </div>
         </div>
       </div>
@@ -33,12 +34,13 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
       <InfiniteScroll>
         <div className="relative sm:pt-20 pb-0 sm:pb-20">
           <div className="sm:hidden p-4">
-            <AboutHeader profile={profile} />
+            <AboutHeader profile={profile} locale={locale} />
           </div>
           <AboutContent 
             skills={skills} 
             experiences={experiences} 
-            education={education} 
+            education={education}
+            locale={locale}
           />
           <div className="sm:hidden p-4 mt-4">
             <AboutFooter socials={socials} />

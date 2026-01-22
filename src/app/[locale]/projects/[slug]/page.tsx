@@ -38,19 +38,21 @@ export default async function ProjectPage({ params }: Props) {
           {/* Left column - fixed on desktop */}
           <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen lg:overflow-y-auto p-6 sm:p-8 lg:p-10 xl:p-14">
             <div className="pt-8 lg:pt-0">
-              <ProjectHeader title={project.title} />
+              <ProjectHeader 
+                title={locale === 'en' && project.title_en ? project.title_en : project.title} 
+              />
 
               <FadeIn delay={0.15}>
                 <p className="font-mono text-xs sm:text-sm text-secondary leading-relaxed mt-6 lg:mt-10 max-w-lg">
-                  {project.description}
+                  {locale === 'en' && project.description_en ? project.description_en : project.description}
                 </p>
               </FadeIn>
 
               <ProjectMetadata
                 agency={project.agency}
                 client={project.client}
-                responsibilities={project.responsibilities}
-                development={project.development}
+                responsibilities={locale === 'en' && project.responsibilities_en?.length ? project.responsibilities_en : project.responsibilities}
+                development={locale === 'en' && project.development_en ? project.development_en : project.development}
               />
             </div>
           </aside>

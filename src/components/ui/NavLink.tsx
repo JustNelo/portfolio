@@ -52,7 +52,7 @@ export function NavBar({ links }: NavBarProps) {
       </div>
       <div className="flex gap-3 items-center pointer-events-auto">
         <FadeIn delay={0.1}>
-          <div className="border border-primary/30 px-3 py-2 bg-background/80 backdrop-blur-md">
+          <div className="border border-primary/30 px-4 py-2.5 bg-background/80 backdrop-blur-md">
             <LanguageSwitcher />
           </div>
         </FadeIn>

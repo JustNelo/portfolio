@@ -24,9 +24,10 @@ export default function SocialsManager({ initialSocials }: SocialsManagerProps) 
     formData.set('order', String(socials.length))
 
     const result = await addSocial(formData)
-    if (result.success) {
-      // Refresh the page to get updated data
-      window.location.reload()
+    if (result.success && result.data) {
+      setSocials([...socials, result.data])
+      setIsAdding(false)
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -44,8 +45,13 @@ export default function SocialsManager({ initialSocials }: SocialsManagerProps) 
 
     const result = await updateSocial(formData)
     if (result.success) {
+      setSocials(socials.map(s => s.id === social.id ? {
+        ...s,
+        name: formData.get('name') as string,
+        href: formData.get('href') as string,
+      } : s))
       setEditingId(null)
-      window.location.reload()
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }

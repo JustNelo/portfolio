@@ -11,6 +11,12 @@ export const projectSchema = z.object({
   responsibilities: z.array(z.string()).optional().default([]),
   development: z.string().max(100).optional().nullable(),
   external_url: z.string().url().optional().nullable().or(z.literal('')),
+  // English translations
+  title_en: z.string().max(100).optional().default(''),
+  description_en: z.string().max(2000).optional().default(''),
+  category_en: z.string().max(50).optional().default(''),
+  responsibilities_en: z.array(z.string()).optional().default([]),
+  development_en: z.string().max(100).optional().default(''),
 })
 
 export const updateProjectSchema = projectSchema

@@ -46,7 +46,7 @@ export default async function ProjectsPage({ params }: Props) {
           </header>
 
           <FadeIn delay={0.2}>
-            <ProjectList projects={projects} />
+            <ProjectList projects={projects} locale={locale} />
           </FadeIn>
         </div>
     </main>

@@ -1,6 +1,4 @@
-'use client'
-
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { FadeIn, DecodeText } from '@/components/animations'
 import type { Skill, Experience, Education, TimelineItem } from '@/lib/validations/about'
 
@@ -8,6 +6,7 @@ interface AboutContentProps {
   skills: Skill[]
   experiences: TimelineItem[]
   education: TimelineItem[]
+  locale: string
 }
 
 type TimelineType = 'EXP' | 'EDU'
@@ -16,6 +15,7 @@ interface TimelineEntryProps {
   item: TimelineItem
   index: number
   type: TimelineType
+  locale: string
 }
 
 const OFFSET_PATTERNS = [
@@ -43,14 +43,19 @@ function isEducation(item: TimelineItem): item is Education {
   return item.type === 'education'
 }
 
-function TimelineEntry({ item, index, type }: TimelineEntryProps) {
+function TimelineEntry({ item, index, type, locale }: TimelineEntryProps) {
   const displayYear = type === 'EXP' 
     ? item.period.split(' - ')[0] 
     : item.period.split(' - ')[1]
   const yearsCount = calculateYears(item.period)
   const offset = OFFSET_PATTERNS[index % OFFSET_PATTERNS.length]
-  const title = isExperience(item) ? item.title : item.degree
+  
+  // Use English translations if locale is 'en' and translations exist
+  const title = isExperience(item) 
+    ? (locale === 'en' && item.titleEn ? item.titleEn : item.title)
+    : (locale === 'en' && item.degreeEn ? item.degreeEn : item.degree)
   const subtitle = isExperience(item) ? item.company : item.school
+  const description = locale === 'en' && item.descriptionEn ? item.descriptionEn : item.description
   const itemDelay = STAGGER_DELAY + (index * 0.08)
 
   return (
@@ -75,7 +80,7 @@ function TimelineEntry({ item, index, type }: TimelineEntryProps) {
           {subtitle} — {item.period}
         </p>
         <p className="font-mono text-[10px] sm:text-xs text-white/60 leading-relaxed sm:leading-loose">
-          {item.description}
+          {description}
         </p>
       </div>
       
@@ -111,8 +116,8 @@ function ConnectorLine({ index }: { index: number }) {
   return <div className={`absolute top-0 h-px bg-white/40 ${width} ${position}`} />
 }
 
-export default function AboutContent({ skills, experiences, education }: AboutContentProps) {
-  const t = useTranslations('about')
+export default async function AboutContent({ skills, experiences, education, locale }: AboutContentProps) {
+  const t = await getTranslations('about')
 
   return (
     <div className="flex flex-col pt-4 sm:pt-16 pb-8 sm:pb-16">
@@ -134,14 +139,16 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
           />
 
           <div className="sm:ml-6 md:ml-10 flex flex-wrap gap-2 sm:gap-3">
-            {skills.map((skill: Skill, index: number) => (
+            {skills.map((skill: Skill, index: number) => {
+              const category = locale === 'en' && skill.categoryEn ? skill.categoryEn : skill.category
+              return (
               <FadeIn 
                 key={skill.category} 
                 className="border border-white/20 p-2 sm:p-3 flex-1 min-w-35 sm:min-w-0 sm:flex-none"
                 delay={0.1 + index * 0.08}
               >
                 <DecodeText
-                  text={skill.category}
+                  text={category}
                   as="span"
                   className="text-[8px] sm:text-[9px] text-white/40 uppercase tracking-[0.2em] block mb-1.5 sm:mb-2"
                   duration={0.5}
@@ -155,7 +162,8 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
                   ))}
                 </div>
               </FadeIn>
-            ))}
+              )
+            })}
           </div>
         </FadeIn>
       </section>
@@ -172,7 +180,7 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
         </FadeIn>
         <div>
           {experiences.filter(isExperience).map((exp, i) => (
-            <TimelineEntry key={exp.id} item={exp} index={i} type="EXP" />
+            <TimelineEntry key={exp.id} item={exp} index={i} type="EXP" locale={locale} />
           ))}
         </div>
       </section>
@@ -189,7 +197,7 @@ export default function AboutContent({ skills, experiences, education }: AboutCo
         </FadeIn>
         <div>
           {education.filter(isEducation).map((edu, i) => (
-            <TimelineEntry key={edu.id} item={edu} index={i} type="EDU" />
+            <TimelineEntry key={edu.id} item={edu} index={i} type="EDU" locale={locale} />
           ))}
         </div>
       </section>

@@ -29,8 +29,11 @@ export default function SkillsManager({ initialSkills }: SkillsManagerProps) {
     formData.set('order', String(skills.length))
 
     const result = await addSkill(formData)
-    if (result.success) {
-      window.location.reload()
+    if (result.success && result.data) {
+      setSkills([...skills, result.data])
+      setIsAdding(false)
+      setNewItems([''])
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -50,8 +53,14 @@ export default function SkillsManager({ initialSkills }: SkillsManagerProps) {
 
     const result = await updateSkill(formData)
     if (result.success) {
+      setSkills(skills.map(s => s.id === skill.id ? {
+        ...s,
+        category: formData.get('category') as string,
+        categoryEn: (formData.get('category_en') as string) || '',
+        items: filteredItems,
+      } : s))
       setEditingId(null)
-      window.location.reload()
+      setMessage({ type: 'success', text: result.message })
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -86,14 +95,23 @@ export default function SkillsManager({ initialSkills }: SkillsManagerProps) {
           >
             {editingId === skill.id ? (
               <form onSubmit={(e) => handleUpdate(e, skill)} className="space-y-4">
-                <input
-                  type="text"
-                  name="category"
-                  defaultValue={skill.category}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
-                  placeholder="Catégorie"
-                  required
-                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    name="category"
+                    defaultValue={skill.category}
+                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
+                    placeholder="Catégorie (FR)"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="category_en"
+                    defaultValue={skill.categoryEn}
+                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
+                    placeholder="Category (EN)"
+                  />
+                </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -197,13 +215,21 @@ export default function SkillsManager({ initialSkills }: SkillsManagerProps) {
 
       {isAdding ? (
         <form onSubmit={handleAdd} className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-4">
-          <input
-            type="text"
-            name="category"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
-            placeholder="Ex: Frontend"
-            required
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="text"
+              name="category"
+              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
+              placeholder="Ex: Frontend (FR)"
+              required
+            />
+            <input
+              type="text"
+              name="category_en"
+              className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 font-mono text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 transition-all"
+              placeholder="Ex: Frontend (EN)"
+            />
+          </div>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">

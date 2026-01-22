@@ -26,7 +26,7 @@ export default function LanguageSwitcher() {
           <button
             onClick={() => handleChange(loc)}
             className={`
-              px-1.5 py-1 transition-colors
+              transition-colors hover:cursor-pointer
               ${locale === loc 
                 ? 'text-primary' 
                 : 'text-white/40 hover:text-white/70'
