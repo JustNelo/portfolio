@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { deleteProject, type ProjectWithMedias } from '@/lib/actions/project'
+import { deleteProject } from '@/lib/actions/project'
+import type { ProjectWithMedias } from '@/types'
 import { toast } from '../../_components/Toaster'
 
 interface ProjectsTableProps {

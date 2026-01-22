@@ -27,21 +27,26 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
   variant?: Variant
   size?: Size
   error?: string
+  id?: string
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', variant = 'default', size = 'md', error, ...props }, ref) => {
+  ({ className = '', variant = 'default', size = 'md', error, id, ...props }, ref) => {
     const computedVariant = error ? 'error' : variant
+    const errorId = id ? `${id}-error` : undefined
     
     return (
       <div className="w-full">
         <input
           ref={ref}
+          id={id}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error && errorId ? errorId : undefined}
           className={`${baseStyles} ${variants[computedVariant]} ${sizes[size]} ${className}`}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-xs text-red-400 font-mono">{error}</p>
+          <p id={errorId} role="alert" className="mt-1 text-xs text-red-400 font-mono">{error}</p>
         )}
       </div>
     )
@@ -56,21 +61,26 @@ interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>
   variant?: Variant
   size?: Size
   error?: string
+  id?: string
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className = '', variant = 'default', size = 'md', error, ...props }, ref) => {
+  ({ className = '', variant = 'default', size = 'md', error, id, ...props }, ref) => {
     const computedVariant = error ? 'error' : variant
+    const errorId = id ? `${id}-error` : undefined
     
     return (
       <div className="w-full">
         <textarea
           ref={ref}
+          id={id}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error && errorId ? errorId : undefined}
           className={`${baseStyles} ${variants[computedVariant]} ${sizes[size]} resize-none ${className}`}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-xs text-red-400 font-mono">{error}</p>
+          <p id={errorId} role="alert" className="mt-1 text-xs text-red-400 font-mono">{error}</p>
         )}
       </div>
     )
@@ -102,16 +112,23 @@ export function Label({ children, required, className = '', ...props }: LabelPro
 // ─────────────────────────────────────────────────────────────────────────────
 interface FormFieldProps {
   label: string
+  htmlFor?: string
   required?: boolean
+  error?: string
   children: React.ReactNode
   className?: string
 }
 
-export function FormField({ label, required, children, className = '' }: FormFieldProps) {
+export function FormField({ label, htmlFor, required, error, children, className = '' }: FormFieldProps) {
   return (
     <div className={className}>
-      <Label required={required}>{label}</Label>
+      <Label htmlFor={htmlFor} required={required}>{label}</Label>
       {children}
+      {error && (
+        <p id={htmlFor ? `${htmlFor}-error` : undefined} role="alert" className="mt-1 text-xs text-red-400 font-mono">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

@@ -47,5 +47,6 @@ export type {
   ProjectMedia,
   ProjectMediaInsert,
   ProjectMediaUpdate,
+  ProjectWithMedias,
   MediaType
 } from './project'

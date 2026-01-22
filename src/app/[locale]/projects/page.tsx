@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getProjects } from '@/services/project.service'
+import { getProjects } from '@/lib/actions/project'
 import ProjectList from './_components/ProjectList'
 import { FadeIn, DecodeText } from '@/components/animations'
 import { NavBar } from '@/components/ui'

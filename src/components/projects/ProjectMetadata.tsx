@@ -2,9 +2,13 @@
 
 import { useTranslations } from 'next-intl'
 import { FadeIn } from '@/components/animations'
-import type { Project } from '@/types'
 
-type MetadataProps = Pick<Project, 'agency' | 'client' | 'responsibilities' | 'development'>
+interface MetadataProps {
+  agency?: string | null
+  client?: string | null
+  responsibilities?: string[]
+  development?: string | null
+}
 
 export default function ProjectMetadata({ agency, client, responsibilities, development }: MetadataProps) {
   const t = useTranslations('projectDetail')

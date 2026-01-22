@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getProjectBySlug } from '@/services/project.service'
+import { getProjectBySlug } from '@/lib/actions/project'
 import { notFound } from 'next/navigation'
 import { FadeIn } from '@/components/animations'
 import { NavBar } from '@/components/ui'
@@ -24,7 +24,7 @@ export default async function ProjectPage({ params }: Props) {
     notFound()
   }
 
-  const sortedMedias = project.medias?.sort((a, b) => a.order - b.order) || []
+  const sortedMedias = project.project_medias?.sort((a, b) => a.order - b.order) || []
 
   return (
     <main className="relative min-h-screen">

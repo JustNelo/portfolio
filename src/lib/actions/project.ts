@@ -3,51 +3,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { projectSchema, updateProjectSchema } from '@/lib/validations/project'
 import { revalidatePath } from 'next/cache'
+import { withAuth, type ActionResponse } from './withAuth'
+import type { ProjectWithMedias } from '@/types'
 
-export interface ActionResponse {
-  success: boolean
-  message: string
+export interface ProjectActionResponse extends ActionResponse {
   slug?: string
 }
 
-export interface ProjectWithMedias {
-  id: string
-  title: string
-  slug: string
-  description: string
-  year: number
-  category: string
-  agency: string | null
-  client: string | null
-  responsibilities: string[]
-  development: string | null
-  external_url: string | null
-  created_at: string
-  // English translations
-  title_en: string | null
-  description_en: string | null
-  category_en: string | null
-  responsibilities_en: string[]
-  development_en: string | null
-  project_medias: {
-    id: string
-    url: string
-    type: 'image' | 'video'
-    order: number
-  }[]
-}
-
-export async function createProject(formData: FormData): Promise<ActionResponse> {
-  const supabase = await createClient()
-
-  // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return { success: false, message: 'Non autorisé. Veuillez vous connecter.' }
-  }
-
-  // Extract form fields
-  const rawData = {
+export async function createProject(formData: FormData): Promise<ProjectActionResponse> {
+  return withAuth(async (supabase) => {
+    // Extract form fields
+    const rawData = {
     title: formData.get('title') as string,
     slug: formData.get('slug') as string,
     description: formData.get('description') as string,
@@ -162,22 +128,16 @@ export async function createProject(formData: FormData): Promise<ActionResponse>
     }
   }
 
-  revalidatePath('/projects')
-  revalidatePath(`/projects/${validatedData.slug}`)
+    revalidatePath('/projects')
+    revalidatePath(`/projects/${validatedData.slug}`)
 
-  return { success: true, message: 'Projet créé avec succès!', slug: validatedData.slug }
+    return { success: true, message: 'Projet créé avec succès!', slug: validatedData.slug }
+  })
 }
 
 export async function deleteProject(id: string): Promise<ActionResponse> {
-  const supabase = await createClient()
-
-  // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return { success: false, message: 'Non autorisé.' }
-  }
-
-  // Step 1: Get project info to find the slug (folder name in storage)
+  return withAuth(async (supabase) => {
+    // Step 1: Get project info to find the slug (folder name in storage)
   const { data: project, error: projectFetchError } = await supabase
     .from('projects')
     .select('slug')
@@ -229,22 +189,16 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     return { success: false, message: projectError.message }
   }
 
-  revalidatePath('/projects')
-  revalidatePath('/admin/projects')
+    revalidatePath('/projects')
+    revalidatePath('/admin/projects')
 
-  return { success: true, message: 'Projet et fichiers supprimés.' }
+    return { success: true, message: 'Projet et fichiers supprimés.' }
+  })
 }
 
-export async function updateProject(id: string, formData: FormData): Promise<ActionResponse> {
-  const supabase = await createClient()
-
-  // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return { success: false, message: 'Non autorisé. Veuillez vous connecter.' }
-  }
-
-  // Get existing project
+export async function updateProject(id: string, formData: FormData): Promise<ProjectActionResponse> {
+  return withAuth(async (supabase) => {
+    // Get existing project
   const { data: existingProject, error: fetchError } = await supabase
     .from('projects')
     .select('slug')
@@ -417,12 +371,13 @@ export async function updateProject(id: string, formData: FormData): Promise<Act
     }
   }
 
-  revalidatePath('/projects')
-  revalidatePath(`/projects/${validatedData.slug}`)
-  revalidatePath('/admin/projects')
-  revalidatePath(`/admin/projects/${id}`)
+    revalidatePath('/projects')
+    revalidatePath(`/projects/${validatedData.slug}`)
+    revalidatePath('/admin/projects')
+    revalidatePath(`/admin/projects/${id}`)
 
-  return { success: true, message: 'Projet mis à jour avec succès!', slug: validatedData.slug }
+    return { success: true, message: 'Projet mis à jour avec succès!', slug: validatedData.slug }
+  })
 }
 
 export async function getProjects(): Promise<ProjectWithMedias[]> {
@@ -468,6 +423,31 @@ export async function getProjectById(id: string): Promise<ProjectWithMedias | nu
 
   if (error) {
     console.error('Error fetching project:', error)
+    return null
+  }
+
+  return data as ProjectWithMedias
+}
+
+export async function getProjectBySlug(slug: string): Promise<ProjectWithMedias | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select(`
+      *,
+      project_medias (
+        id,
+        url,
+        type,
+        order
+      )
+    `)
+    .eq('slug', slug)
+    .single()
+
+  if (error) {
+    console.error('Error fetching project by slug:', error)
     return null
   }
 

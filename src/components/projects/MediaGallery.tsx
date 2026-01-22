@@ -1,9 +1,18 @@
 import Image from 'next/image'
 import { FadeIn } from '@/components/animations'
-import type { ProjectMedia } from '@/types'
+import type { MediaType } from '@/types'
+
+interface GalleryMedia {
+  id: string
+  url: string
+  type: MediaType
+  order: number
+  alt?: string
+  duration?: number
+}
 
 interface MediaGalleryProps {
-  medias: ProjectMedia[]
+  medias: GalleryMedia[]
   projectTitle: string
 }
 
@@ -21,7 +30,7 @@ export default function MediaGallery({ medias, projectTitle }: MediaGalleryProps
   )
 }
 
-function MediaItem({ media, projectTitle, isFirst }: { media: ProjectMedia; projectTitle: string; isFirst: boolean }) {
+function MediaItem({ media, projectTitle, isFirst }: { media: GalleryMedia; projectTitle: string; isFirst: boolean }) {
   return (
     <div className="relative aspect-16/10 bg-card overflow-hidden">
       {media.type === 'image' ? (

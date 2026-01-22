@@ -3,20 +3,20 @@
 import { useState } from 'react'
 import { DecodeText } from '@/components/animations'
 import { Link } from '@/lib/i18n/navigation'
-import type { Project } from '@/types'
+import type { ProjectWithMedias } from '@/types'
 
 interface ProjectListProps {
-  projects: Project[]
+  projects: ProjectWithMedias[]
   locale: string
 }
 
 export default function ProjectList({ projects, locale }: ProjectListProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  const getTitle = (project: Project) => 
+  const getTitle = (project: ProjectWithMedias) => 
     locale === 'en' && project.title_en ? project.title_en : project.title
 
-  const getCategory = (project: Project) => 
+  const getCategory = (project: ProjectWithMedias) => 
     locale === 'en' && project.category_en ? project.category_en : project.category
 
   return (
