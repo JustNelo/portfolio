@@ -21,7 +21,7 @@ export default async function AdminLayout({
   return (
     <html lang="fr">
       <body className={`${anton.variable} ${jetbrainsMono.variable} antialiased`}>
-        <Scene />
+        <Scene withLoader={false} />
         <div className="min-h-screen relative z-10">
           {/* Sidebar - hidden on mobile, visible on lg+ */}
           <AdminSidebar user={user} />

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
-import { useTransitionStore } from '@/store/useTransitionStore'
+import { useTransitionStore } from '@/stores/useTransitionStore'
 
 interface TemplateProps {
   children: ReactNode

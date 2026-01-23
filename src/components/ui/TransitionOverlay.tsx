@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
-import { useTransitionStore } from '@/store/useTransitionStore'
+import { useTransitionStore } from '@/stores/useTransitionStore'
 
 export default function TransitionOverlay() {
   const { isTransitioning, endTransition } = useTransitionStore()

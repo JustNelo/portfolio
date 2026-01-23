@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidateGroup } from './helpers'
+import { validateFormData } from '@/lib/validations/utils'
 import { withAuth, type ActionResponse } from './withAuth'
 
 import {
@@ -65,13 +66,10 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
       cta_text_en: (formData.get('cta_text_en') as string) || '',
     }
 
-    const validationResult = profileSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(profileSchema, rawData)
+    if (!validation.success) return validation
 
-    const validatedData = validationResult.data
+    const validatedData = validation.data
 
     // Check if profile exists
     const { data: existingProfile } = await supabase
@@ -155,13 +153,10 @@ export async function addSocial(formData: FormData): Promise<ActionResponse<Soci
       order: parseInt(formData.get('order') as string, 10) || 0,
     }
 
-    const validationResult = socialSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(socialSchema, rawData)
+    if (!validation.success) return validation
 
-    const { data, error } = await supabase.from('socials').insert(validationResult.data).select().single()
+    const { data, error } = await supabase.from('socials').insert(validation.data).select().single()
 
     if (error) {
       console.error('Social insert error:', error)
@@ -183,13 +178,10 @@ export async function updateSocial(formData: FormData): Promise<ActionResponse> 
       order: parseInt(formData.get('order') as string, 10) || 0,
     }
 
-    const validationResult = updateSocialSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(updateSocialSchema, rawData)
+    if (!validation.success) return validation
 
-    const { id, ...updateData } = validationResult.data
+    const { id, ...updateData } = validation.data
 
     const { error } = await supabase
       .from('socials')
@@ -251,13 +243,10 @@ export async function addSkill(formData: FormData): Promise<ActionResponse<Skill
       category_en: (formData.get('category_en') as string) || '',
     }
 
-    const validationResult = skillSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(skillSchema, rawData)
+    if (!validation.success) return validation
 
-    const { data, error } = await supabase.from('skills').insert(validationResult.data).select().single()
+    const { data, error } = await supabase.from('skills').insert(validation.data).select().single()
 
     if (error) {
       console.error('Skill insert error:', error)
@@ -280,13 +269,10 @@ export async function updateSkill(formData: FormData): Promise<ActionResponse> {
       category_en: (formData.get('category_en') as string) || '',
     }
 
-    const validationResult = updateSkillSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(updateSkillSchema, rawData)
+    if (!validation.success) return validation
 
-    const { id, ...updateData } = validationResult.data
+    const { id, ...updateData } = validation.data
 
     const { error } = await supabase
       .from('skills')
@@ -399,13 +385,10 @@ export async function addTimelineItem(formData: FormData): Promise<ActionRespons
           description_en: (formData.get('description_en') as string) || '',
         }
 
-    const validationResult = timelineSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(timelineSchema, rawData)
+    if (!validation.success) return validation
 
-    const { data, error } = await supabase.from('timeline').insert(validationResult.data).select().single()
+    const { data, error } = await supabase.from('timeline').insert(validation.data).select().single()
 
     if (error) {
       console.error('Timeline insert error:', error)
@@ -447,13 +430,10 @@ export async function updateTimelineItem(formData: FormData): Promise<ActionResp
           description_en: (formData.get('description_en') as string) || '',
         }
 
-    const validationResult = updateTimelineSchema.safeParse(rawData)
-    if (!validationResult.success) {
-      const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-      return { success: false, message: `Validation échouée: ${errors}` }
-    }
+    const validation = await validateFormData(updateTimelineSchema, rawData)
+    if (!validation.success) return validation
 
-    const { id: itemId, ...updateData } = validationResult.data
+    const { id: itemId, ...updateData } = validation.data
 
     const { error } = await supabase
       .from('timeline')

@@ -2,7 +2,7 @@
 
 import { useRouter } from '@/lib/i18n/navigation'
 import { useCallback } from 'react'
-import { useTransitionStore } from '@/store/useTransitionStore'
+import { useTransitionStore } from '@/stores/useTransitionStore'
 
 const TRANSITION_DURATION = 400
 

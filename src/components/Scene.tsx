@@ -14,7 +14,11 @@ const MIN_LOADER_DURATION = 2500
 // Delay after "READY" before hiding loader (matches Loader animation)
 const LOADER_EXIT_DELAY = 1400
 
-export default function Scene(): React.JSX.Element {
+interface SceneProps {
+  withLoader?: boolean
+}
+
+export default function Scene({ withLoader = true }: SceneProps): React.JSX.Element {
   const isSceneReady = useSceneStore((state) => state.isSceneReady)
   const setContextLost = useSceneStore((state) => state.setContextLost)
   const setCanRevealStore = useSceneStore((state) => state.setCanReveal)
@@ -110,7 +114,7 @@ export default function Scene(): React.JSX.Element {
 
   return (
     <>
-      {showLoader && <Loader />}
+      {withLoader && showLoader && <Loader />}
       <div 
         className="fixed inset-0 -z-10"
         style={{

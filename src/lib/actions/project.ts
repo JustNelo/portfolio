@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { projectSchema, updateProjectSchema } from '@/lib/validations/project'
 import { revalidatePath } from 'next/cache'
 import { withAuth, type ActionResponse } from './withAuth'
+import { validateFormData } from '@/lib/validations/utils'
 import type { ProjectWithMedias } from '@/types'
 
 export interface ProjectActionResponse extends ActionResponse {
@@ -33,13 +34,10 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
   }
 
   // Validate form data with Zod
-  const validationResult = projectSchema.safeParse(rawData)
-  if (!validationResult.success) {
-    const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-    return { success: false, message: `Validation échouée: ${errors}` }
-  }
+  const validation = await validateFormData(projectSchema, rawData)
+  if (!validation.success) return validation
 
-  const validatedData = validationResult.data
+  const validatedData = validation.data
 
   // Get media files
   const mediaFiles = formData.getAll('medias') as File[]
@@ -230,13 +228,10 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
   }
 
   // Validate form data with Zod
-  const validationResult = updateProjectSchema.safeParse(rawData)
-  if (!validationResult.success) {
-    const errors = validationResult.error.issues.map((e) => e.message).join(', ')
-    return { success: false, message: `Validation échouée: ${errors}` }
-  }
+  const validation = await validateFormData(updateProjectSchema, rawData)
+  if (!validation.success) return validation
 
-  const validatedData = validationResult.data
+  const validatedData = validation.data
 
   // Get existing medias with their new order
   const existingMediasOrder = JSON.parse(
