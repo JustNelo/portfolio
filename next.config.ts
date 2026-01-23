@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    viewTransition: true,
     serverActions: {
       bodySizeLimit: '50mb',
       allowedOrigins: ['localhost:3000'],

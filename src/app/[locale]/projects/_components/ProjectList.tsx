@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { DecodeText } from '@/components/animations'
-import { Link } from '@/lib/i18n/navigation'
+import { useTransitionNavigation } from '@/hooks/useTransitionNavigation'
 import type { ProjectWithMedias } from '@/types'
 
 interface ProjectListProps {
@@ -12,12 +12,18 @@ interface ProjectListProps {
 
 export default function ProjectList({ projects, locale }: ProjectListProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const { navigate } = useTransitionNavigation()
 
   const getTitle = (project: ProjectWithMedias) => 
     locale === 'en' && project.title_en ? project.title_en : project.title
 
   const getCategory = (project: ProjectWithMedias) => 
     locale === 'en' && project.category_en ? project.category_en : project.category
+
+  const handleClick = (e: React.MouseEvent, slug: string) => {
+    e.preventDefault()
+    navigate(`/projects/${slug}`)
+  }
 
   return (
     <nav className="flex flex-col gap-2">
@@ -26,10 +32,11 @@ export default function ProjectList({ projects, locale }: ProjectListProps) {
         const category = getCategory(project)
 
         return (
-          <Link
+          <a
             key={project.id}
             href={`/projects/${project.slug}`}
-            className="group relative py-2"
+            onClick={(e) => handleClick(e, project.slug)}
+            className="group relative py-2 cursor-pointer"
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
@@ -61,7 +68,7 @@ export default function ProjectList({ projects, locale }: ProjectListProps) {
             </div>
 
             <div className="absolute bottom-0 left-12 right-0 h-px bg-border group-hover:bg-border-medium transition-colors" />
-          </Link>
+          </a>
         )
       })}
     </nav>

@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { locales, type Locale } from '@/lib/i18n/config'
+import { useSceneStore } from '@/stores/useSceneStore'
 
 const localeLabels: Record<Locale, string> = {
   fr: 'FR',
@@ -13,8 +14,11 @@ export default function LanguageSwitcher() {
   const locale = useLocale() as Locale
   const router = useRouter()
   const pathname = usePathname()
+  const triggerLoader = useSceneStore((state) => state.triggerLoader)
 
   const handleChange = (newLocale: Locale) => {
+    if (newLocale === locale) return
+    triggerLoader()
     router.replace(pathname, { locale: newLocale })
   }
 

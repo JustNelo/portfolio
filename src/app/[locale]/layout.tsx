@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { anton, jetbrainsMono } from "@/app/fonts";
 import "@/app/globals.css";
 import Scene from "@/components/Scene";
+import TransitionOverlay from "@/components/ui/TransitionOverlay";
 import { locales, type Locale } from '@/lib/i18n/config';
 
 type Props = {
@@ -43,6 +44,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className={`${anton.variable} ${jetbrainsMono.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <Scene />
+          <TransitionOverlay />
           {children}
         </NextIntlClientProvider>
       </body>

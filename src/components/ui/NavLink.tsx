@@ -1,5 +1,7 @@
-import { Link } from '@/lib/i18n/navigation'
+'use client'
+
 import { FadeIn } from '@/components/animations'
+import { useTransitionNavigation } from '@/hooks/useTransitionNavigation'
 import LanguageSwitcher from './LanguageSwitcher'
 
 export interface NavLinkProps {
@@ -14,22 +16,29 @@ export interface NavLinkProps {
 /**
  * Reusable navigation link component
  * Fixed position in top corners with backdrop blur
- * Uses prefetch for instant navigation
+ * Uses transition navigation for blur effect
  */
 export default function NavLink({ 
   href, 
   label, 
   delay = 0 
 }: NavLinkProps) {
+  const { navigate } = useTransitionNavigation()
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    navigate(href)
+  }
+
   return (
     <FadeIn delay={delay}>
-      <Link 
+      <a 
         href={href}
-        prefetch={true}
-        className="inline-flex items-center gap-2 font-mono text-[11px] text-primary hover:text-muted transition-colors uppercase tracking-widest border border-primary/30 px-4 py-2.5 bg-background/80 backdrop-blur-md"
+        onClick={handleClick}
+        className="inline-flex items-center gap-2 font-mono text-[11px] text-primary hover:text-muted transition-colors uppercase tracking-widest border border-primary/30 px-4 py-2.5 bg-background/80 backdrop-blur-md cursor-pointer"
       >
         <span>{label}</span>
-      </Link>
+      </a>
     </FadeIn>
   )
 }

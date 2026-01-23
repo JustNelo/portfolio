@@ -19,6 +19,8 @@ export default function Scene(): React.JSX.Element {
   const setContextLost = useSceneStore((state) => state.setContextLost)
   const setCanRevealStore = useSceneStore((state) => state.setCanReveal)
   const setLoaderGone = useSceneStore((state) => state.setLoaderGone)
+  const shouldShowLoader = useSceneStore((state) => state.shouldShowLoader)
+  const resetLoaderTrigger = useSceneStore((state) => state.resetLoaderTrigger)
   
   // Check module-level flag immediately (synchronous, no hydration issues)
   const isReturningVisitor = useRef(getHasCompletedFirstLoad()).current
@@ -33,30 +35,41 @@ export default function Scene(): React.JSX.Element {
   // Track willChange for performance (only during transition)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Listen for language change trigger to show loader
+  useEffect(() => {
+    if (shouldShowLoader) {
+      setShowLoader(true)
+      setCanReveal(false)
+      setMinTimeElapsed(false)
+      setIsVisible(false)
+    }
+  }, [shouldShowLoader])
+
   // Minimum loader duration timer
   useEffect(() => {
-    if (isReturningVisitor) return
+    if (isReturningVisitor && !shouldShowLoader) return
+    if (minTimeElapsed && !shouldShowLoader) return
     
     const timer = setTimeout(() => {
       setMinTimeElapsed(true)
     }, MIN_LOADER_DURATION)
     
     return () => clearTimeout(timer)
-  }, [isReturningVisitor])
+  }, [isReturningVisitor, shouldShowLoader, minTimeElapsed])
 
   // When both conditions are met, signal we can reveal
   useEffect(() => {
-    if (isReturningVisitor) return
+    if (isReturningVisitor && !shouldShowLoader) return
     if (!isSceneReady || !minTimeElapsed) return
     
     setCanReveal(true)
     setCanRevealStore(true) // Sync to store for Loader
     setHasCompletedFirstLoad(true)
-  }, [isSceneReady, minTimeElapsed, isReturningVisitor, setCanRevealStore])
+  }, [isSceneReady, minTimeElapsed, isReturningVisitor, shouldShowLoader, setCanRevealStore])
 
   // Handle the actual reveal after loader exit animation completes
   useEffect(() => {
-    if (isReturningVisitor) {
+    if (isReturningVisitor && !shouldShowLoader) {
       // For returning visitors, loader is already gone
       setLoaderGone(true)
       return
@@ -69,6 +82,7 @@ export default function Scene(): React.JSX.Element {
     // Wait for loader's "READY" animation + exit transition
     const timer = setTimeout(() => {
       setShowLoader(false)
+      resetLoaderTrigger() // Reset the trigger flag
       // Use double rAF for browser to process loader removal first
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -81,7 +95,7 @@ export default function Scene(): React.JSX.Element {
     }, LOADER_EXIT_DELAY)
     
     return () => clearTimeout(timer)
-  }, [canReveal, isReturningVisitor, setLoaderGone])
+  }, [canReveal, isReturningVisitor, shouldShowLoader, setLoaderGone, resetLoaderTrigger])
 
   const handleContextLost = useCallback((event: WebGLContextEvent) => {
     event.preventDefault()
