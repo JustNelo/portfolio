@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { FadeIn } from '@/components/animations'
 import { useTransitionNavigation } from '@/hooks/useTransitionNavigation'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -52,8 +53,13 @@ export interface NavBarProps {
  * Fixed at top of screen
  */
 export function NavBar({ links }: NavBarProps) {
+  const t = useTranslations('a11y')
+  
   return (
-    <nav className="fixed top-4 sm:top-6 lg:top-8 left-4 sm:left-6 lg:left-8 right-4 sm:right-6 lg:right-8 z-50 flex justify-between items-center pointer-events-none">
+    <nav 
+      aria-label={t('mainNavigation')}
+      className="fixed top-4 sm:top-6 lg:top-8 left-4 sm:left-6 lg:left-8 right-4 sm:right-6 lg:right-8 z-50 flex justify-between items-center pointer-events-none"
+    >
       <div className="flex gap-3 items-center pointer-events-auto">
         {links.filter(l => l.position === 'left').map((link) => (
           <NavLink key={link.href} {...link} />

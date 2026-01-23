@@ -45,5 +45,18 @@
     "calibration": "Calibration...",
     "init": "Initialisation...",
     "ready": "Prêt"
+  },
+  "a11y": {
+    "mainNavigation": "Navigation principale",
+    "languageSwitcher": "Sélecteur de langue",
+    "switchToFrench": "Changer la langue en Français",
+    "switchToEnglish": "Changer la langue en Anglais",
+    "navigateToProjects": "Aller à la page Projets",
+    "navigateToAbout": "Aller à la page À propos",
+    "backToHome": "Retour à l'accueil",
+    "sceneLoading": "Chargement de la scène 3D",
+    "sceneError": "Erreur de chargement de la scène 3D",
+    "sceneUnavailable": "Scène 3D indisponible",
+    "retry": "Réessayer"
   }
 }

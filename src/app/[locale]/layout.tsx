@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -6,6 +7,8 @@ import { anton, jetbrainsMono } from "@/app/fonts";
 import "@/app/globals.css";
 import Scene from "@/components/Scene";
 import TransitionOverlay from "@/components/ui/TransitionOverlay";
+import SceneFallback from "@/components/ui/SceneFallback";
+import { ErrorBoundary, SceneErrorFallback } from "@/components/ui/ErrorBoundary";
 import { locales, type Locale } from '@/lib/i18n/config';
 
 type Props = {
@@ -43,7 +46,11 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale} suppressHydrationWarning>
       <body className={`${anton.variable} ${jetbrainsMono.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          <Scene />
+          <ErrorBoundary fallback={<SceneErrorFallback />}>
+            <Suspense fallback={<SceneFallback />}>
+              <Scene />
+            </Suspense>
+          </ErrorBoundary>
           <TransitionOverlay />
           {children}
         </NextIntlClientProvider>

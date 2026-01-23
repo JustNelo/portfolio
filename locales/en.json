@@ -45,5 +45,18 @@
     "calibration": "Calibration...",
     "init": "Initialization...",
     "ready": "Ready"
+  },
+  "a11y": {
+    "mainNavigation": "Main navigation",
+    "languageSwitcher": "Language switcher",
+    "switchToFrench": "Switch language to French",
+    "switchToEnglish": "Switch language to English",
+    "navigateToProjects": "Go to Projects page",
+    "navigateToAbout": "Go to About page",
+    "backToHome": "Back to home",
+    "sceneLoading": "Loading 3D scene",
+    "sceneError": "3D scene loading error",
+    "sceneUnavailable": "3D scene unavailable",
+    "retry": "Retry"
   }
 }

@@ -1,5 +1,21 @@
 import { z } from 'zod'
 
+// Allowed file types for media uploads (security)
+export const ALLOWED_MEDIA_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'video/mp4',
+  'video/webm',
+] as const
+
+export const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
+export function isValidMediaType(type: string): boolean {
+  return ALLOWED_MEDIA_TYPES.includes(type as typeof ALLOWED_MEDIA_TYPES[number])
+}
+
 export const projectSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100),
   slug: z.string().min(1, 'Le slug est requis').max(100).regex(/^[a-z0-9-]+$/, 'Le slug ne peut contenir que des lettres minuscules, chiffres et tirets'),

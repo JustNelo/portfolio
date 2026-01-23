@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { projectSchema, updateProjectSchema } from '@/lib/validations/project'
+import { projectSchema, updateProjectSchema, isValidMediaType, MAX_FILE_SIZE } from '@/lib/validations/project'
 import { revalidatePath } from 'next/cache'
 import { withAuth, type ActionResponse } from './withAuth'
 import { validateFormData } from '@/lib/validations/utils'
@@ -48,6 +48,14 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
   for (let i = 0; i < mediaFiles.length; i++) {
     const file = mediaFiles[i]
     if (!file || file.size === 0) continue
+
+    // Security: Validate file type and size
+    if (!isValidMediaType(file.type)) {
+      return { success: false, message: `Type de fichier non autorisé: ${file.type}` }
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return { success: false, message: `Fichier trop volumineux: ${file.name} (max 10MB)` }
+    }
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${i}.${fileExt}`

@@ -13,6 +13,8 @@ import {
   MenuIcon,
   CloseIcon,
 } from '@/components/icons'
+import Image from 'next/image'
+import logo from '@/public/Logo.svg'
 
 interface NavItem {
   label: string
@@ -86,9 +88,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       <header className="fixed top-0 left-0 right-0 z-50 lg:hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur-xl border-b border-white/10">
           <Link href="/admin" className="block">
-            <h1 className="font-heading text-lg text-primary uppercase tracking-tight">
-              Admin
-            </h1>
+            <Image src={logo} alt="Logo" width={40} height={40} />
           </Link>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -121,13 +121,8 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       >
         {/* Logo - hidden on mobile (shown in header instead) */}
         <div className="p-6 border-b border-white/10 hidden lg:block">
-          <Link href="/admin" className="block group">
-            <h1 className="font-heading text-xl text-primary uppercase tracking-tight group-hover:text-primary/80 transition-colors">
-              Admin
-            </h1>
-            <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest mt-1">
-              Portfolio CMS
-            </p>
+          <Link href="/admin" className="group flex items-center justify-center">
+            <Image src={logo} alt="Logo" width={100} height={100} />
           </Link>
         </div>
 

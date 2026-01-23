@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { locales, type Locale } from '@/lib/i18n/config'
 import { useSceneStore } from '@/stores/useSceneStore'
@@ -15,6 +15,7 @@ export default function LanguageSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
   const triggerLoader = useSceneStore((state) => state.triggerLoader)
+  const t = useTranslations('a11y')
 
   const handleChange = (newLocale: Locale) => {
     if (newLocale === locale) return
@@ -23,10 +24,14 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1 font-mono text-[11px] uppercase tracking-widest">
+    <div 
+      role="group" 
+      aria-label={t('languageSwitcher')}
+      className="flex items-center gap-1 font-mono text-[11px] uppercase tracking-widest"
+    >
       {locales.map((loc, index) => (
         <span key={loc} className="flex items-center">
-          {index > 0 && <span className="text-white/30 mx-1">/</span>}
+          {index > 0 && <span className="text-white/30 mx-1" aria-hidden="true">/</span>}
           <button
             onClick={() => handleChange(loc)}
             className={`
@@ -36,7 +41,8 @@ export default function LanguageSwitcher() {
                 : 'text-white/40 hover:text-white/70'
               }
             `}
-            aria-label={`Switch to ${localeLabels[loc]}`}
+            aria-label={loc === 'fr' ? t('switchToFrench') : t('switchToEnglish')}
+            aria-current={locale === loc ? 'true' : undefined}
           >
             {localeLabels[loc]}
           </button>
