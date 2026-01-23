@@ -6,7 +6,7 @@ import { PerformanceMonitor, Preload } from '@react-three/drei'
 import TopographicPlane from '@/components/TopographicPlane'
 import CameraController from '@/components/CameraController'
 import PostProcessingEffects from '@/components/PostProcessingEffects'
-import Loader from '@/components/ui/Loader'
+import Loader from '@/components/ui/Loader/index'
 import { useSceneStore, getHasCompletedFirstLoad, setHasCompletedFirstLoad } from '@/stores/useSceneStore'
 
 // Minimum time to show loader for smooth UX (in ms)
