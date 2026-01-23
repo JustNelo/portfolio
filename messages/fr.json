@@ -38,5 +38,12 @@
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue"
+  },
+  "loader": {
+    "text_1": "From Sapiens",
+    "text_2": "To Ludens",
+    "calibration": "Calibration...",
+    "init": "Initialisation...",
+    "ready": "Prêt"
   }
 }
