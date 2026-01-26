@@ -51,7 +51,7 @@ export default async function ProjectPage({ params }: Props) {
           {/* Left column - fixed on desktop */}
           <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen p-6 sm:p-8 lg:p-10 xl:p-14 flex flex-col">
             {/* Top: Title + Description */}
-            <div className="pt-8 lg:pt-0">
+            <div className="pt-12 lg:pt-0">
               <ProjectHeader 
                 title={locale === 'en' && project.title_en ? project.title_en : project.title} 
               />

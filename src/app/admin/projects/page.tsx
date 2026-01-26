@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { getProjects } from '@/lib/actions/project'
+import { getProjectsFull } from '@/lib/actions/project'
 import ProjectsTable from './_components/ProjectsTable'
 import { ProjectsTableSkeleton } from './_components/ProjectsTableSkeleton'
 
@@ -34,6 +34,6 @@ export default function AdminProjectsPage() {
 }
 
 async function ProjectsTableContent() {
-  const projects = await getProjects()
+  const projects = await getProjectsFull()
   return <ProjectsTable projects={projects} />
 }

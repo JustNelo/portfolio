@@ -33,7 +33,7 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
 
       <InfiniteScroll>
         <div className="relative sm:pt-20 pb-0 sm:pb-20">
-          <div className="sm:hidden p-4">
+          <div className="sm:hidden p-4 pt-12">
             <AboutHeader profile={profile} locale={locale} />
           </div>
           <AboutContent 

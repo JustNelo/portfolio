@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getProjects } from '@/lib/actions/project'
+import { getProjectsFull } from '@/lib/actions/project'
 
 export default async function AdminDashboardPage() {
-  const projects = await getProjects()
+  const projects = await getProjectsFull()
 
   const stats = {
     totalProjects: projects.length,
