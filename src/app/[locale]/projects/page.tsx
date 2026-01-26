@@ -12,9 +12,12 @@ export default async function ProjectsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   
-  const t = await getTranslations('nav');
-  const tProjects = await getTranslations('projects');
-  const projects = await getProjects()
+  // Parallélisation des requêtes indépendantes
+  const [t, tProjects, projects] = await Promise.all([
+    getTranslations('nav'),
+    getTranslations('projects'),
+    getProjects()
+  ])
 
   const yearRange = projects.length > 0 
     ? `${projects[projects.length - 1]?.year}–${projects[0]?.year}` 
@@ -33,7 +36,7 @@ export default async function ProjectsPage({ params }: Props) {
               <DecodeText
                 text={tProjects('title')}
                 as="h1"
-                className="font-heading text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-primary uppercase tracking-tight"
+                className="font-heading text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-primary uppercase tracking-tight"
                 duration={0.4}
                 delay={0.1}
               />

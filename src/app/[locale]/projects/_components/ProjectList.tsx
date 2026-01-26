@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { DecodeText } from '@/components/animations'
 import { useTransitionNavigation } from '@/hooks/useTransitionNavigation'
-import type { ProjectWithMedias } from '@/types'
+import type { ProjectListItem } from '@/lib/actions/project'
 
 interface ProjectListProps {
-  projects: ProjectWithMedias[]
+  projects: ProjectListItem[]
   locale: string
 }
 
@@ -14,10 +14,10 @@ export default function ProjectList({ projects, locale }: ProjectListProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const { navigate } = useTransitionNavigation()
 
-  const getTitle = (project: ProjectWithMedias) => 
+  const getTitle = (project: ProjectListItem) => 
     locale === 'en' && project.title_en ? project.title_en : project.title
 
-  const getCategory = (project: ProjectWithMedias) => 
+  const getCategory = (project: ProjectListItem) => 
     locale === 'en' && project.category_en ? project.category_en : project.category
 
   const handleClick = (e: React.MouseEvent, slug: string) => {

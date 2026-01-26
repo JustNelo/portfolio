@@ -26,7 +26,11 @@
     "agency": "Agence",
     "client": "Client",
     "responsibilities": "Responsabilités",
-    "development": "Développement"
+    "development": "Développement",
+    "likeWhatYouSee": "Vous aimez ce que vous voyez ?",
+    "letsTalk": "DISCUTONS",
+    "wantToSeeMore": "Envie d'en voir plus ?",
+    "nextProject": "PROJET SUIVANT"
   },
   "login": {
     "title": "Admin Login",

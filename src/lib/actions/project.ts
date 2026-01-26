@@ -383,7 +383,34 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
   })
 }
 
-export async function getProjects(): Promise<ProjectWithMedias[]> {
+export interface ProjectListItem {
+  id: string
+  slug: string
+  title: string
+  title_en: string | null
+  category: string
+  category_en: string | null
+  year: number
+}
+
+export async function getProjects(): Promise<ProjectListItem[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select('id, slug, title, title_en, category, category_en, year')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching projects:', error)
+    return []
+  }
+
+  return data as ProjectListItem[]
+}
+
+// Full query for admin pages that need all data
+export async function getProjectsFull(): Promise<ProjectWithMedias[]> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -422,6 +449,7 @@ export async function getProjectById(id: string): Promise<ProjectWithMedias | nu
       )
     `)
     .eq('id', id)
+    .order('order', { referencedTable: 'project_medias', ascending: true })
     .single()
 
   if (error) {
@@ -447,6 +475,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectWithMedias 
       )
     `)
     .eq('slug', slug)
+    .order('order', { referencedTable: 'project_medias', ascending: true })
     .single()
 
   if (error) {

@@ -1,12 +1,13 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getProjectBySlug } from '@/lib/actions/project'
+import { getProjectBySlug, getProjects } from '@/lib/actions/project'
 import { notFound } from 'next/navigation'
 import { FadeIn } from '@/components/animations'
 import { NavBar } from '@/components/ui'
 import { 
   ProjectHeader, 
   ProjectMetadata, 
-  MediaGallery
+  MediaGallery,
+  ProjectFooter
 } from '@/components/projects'
 
 type Props = {
@@ -17,14 +18,26 @@ export default async function ProjectPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   
-  const t = await getTranslations('nav');
-  const project = await getProjectBySlug(slug)
+  // Parallélisation des requêtes indépendantes
+  const [t, tDetail, project, allProjects] = await Promise.all([
+    getTranslations('nav'),
+    getTranslations('projectDetail'),
+    getProjectBySlug(slug),
+    getProjects()
+  ])
 
   if (!project) {
     notFound()
   }
 
-  const sortedMedias = project.project_medias?.sort((a, b) => a.order - b.order) || []
+  // Médias déjà triés par la requête Supabase (order ASC)
+  const medias = project.project_medias || []
+
+  // Trouver le projet suivant
+  const currentIndex = allProjects.findIndex(p => p.slug === slug)
+  const nextProject = currentIndex >= 0 && currentIndex < allProjects.length - 1
+    ? allProjects[currentIndex + 1]
+    : allProjects[0] // Boucle vers le premier si dernier projet
 
   return (
     <main className="relative min-h-screen">
@@ -36,7 +49,8 @@ export default async function ProjectPage({ params }: Props) {
 
         <div className="flex flex-col lg:flex-row min-h-screen">
           {/* Left column - fixed on desktop */}
-          <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen lg:overflow-y-auto p-6 sm:p-8 lg:p-10 xl:p-14">
+          <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen p-6 sm:p-8 lg:p-10 xl:p-14 flex flex-col">
+            {/* Top: Title + Description */}
             <div className="pt-8 lg:pt-0">
               <ProjectHeader 
                 title={locale === 'en' && project.title_en ? project.title_en : project.title} 
@@ -47,7 +61,10 @@ export default async function ProjectPage({ params }: Props) {
                   {locale === 'en' && project.description_en ? project.description_en : project.description}
                 </p>
               </FadeIn>
+            </div>
 
+            {/* Bottom: Metadata */}
+            <div className="mt-auto">
               <ProjectMetadata
                 agency={project.agency}
                 client={project.client}
@@ -58,8 +75,19 @@ export default async function ProjectPage({ params }: Props) {
           </aside>
 
           {/* Right column - scrollable medias */}
-          <div className="lg:ml-[40%] xl:ml-[35%] flex-1 p-4 sm:p-6 lg:p-6 xl:p-8">
-            <MediaGallery medias={sortedMedias} projectTitle={project.title} />
+          <div className="lg:ml-[35%] lg:mr-[15%] flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 lg:pt-56">
+            <MediaGallery medias={medias} projectTitle={project.title} />
+            
+            <ProjectFooter 
+              nextProjectSlug={nextProject?.slug}
+              nextProjectTitle={locale === 'en' && nextProject?.title_en ? nextProject.title_en : nextProject?.title}
+              translations={{
+                likeWhatYouSee: tDetail('likeWhatYouSee'),
+                letsTalk: tDetail('letsTalk'),
+                wantToSeeMore: tDetail('wantToSeeMore'),
+                nextProject: tDetail('nextProject'),
+              }}
+            />
           </div>
         </div>
     </main>
