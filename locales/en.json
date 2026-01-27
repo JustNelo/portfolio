@@ -61,6 +61,8 @@
     "sceneLoading": "Loading 3D scene",
     "sceneError": "3D scene loading error",
     "sceneUnavailable": "3D scene unavailable",
-    "retry": "Retry"
+    "retry": "Retry",
+    "externalLink": "{name} (opens in a new tab)",
+    "projectVideo": "Video of {title} project"
   }
 }

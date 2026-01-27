@@ -19,22 +19,25 @@ export default function AboutHeader({ profile, locale }: AboutHeaderProps) {
     <div>
       <div>
         <FadeIn delay={0.2}>
-          <div className="space-y-0 mb-8 sm:mb-12">
+          <h1 className="font-heading space-y-0 mb-8 sm:mb-12">
+            <span className="sr-only">{profile.firstName} {profile.lastName}</span>
             <DecodeText
               text={profile.firstName}
-              as="h3"
-              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] text-primary italic"
+              as="span"
+              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] text-primary italic block"
               duration={0.7}
               delay={0.2}
+              aria-hidden="true"
             />
             <DecodeText
               text={profile.lastName}
-              as="h3"
-              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] pl-2 sm:pl-4 md:pl-16 lg:pl-24 xl:pl-38 mt-2 sm:mt-4 text-primary"
+              as="span"
+              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] pl-2 sm:pl-4 md:pl-16 lg:pl-24 xl:pl-38 mt-2 sm:mt-4 text-primary block"
               duration={0.7}
               delay={0.2}
+              aria-hidden="true"
             />
-          </div>
+          </h1>
         </FadeIn>
 
         <FadeIn delay={0.4}>

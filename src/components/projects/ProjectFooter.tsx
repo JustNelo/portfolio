@@ -45,7 +45,7 @@ export default function ProjectFooter({
               href={`/projects/${nextProjectSlug}`}
               className="group block text-right lg:text-left"
             >
-              <p className="font-mono text-xs text-muted uppercase tracking-widest mb-3 w-34">
+              <p className="font-mono text-xs text-muted uppercase tracking-widest mb-3 w-34 ml-auto lg:ml-0">
                 {translations.wantToSeeMore}
               </p>
               <DecodeText

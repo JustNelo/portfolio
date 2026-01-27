@@ -19,9 +19,10 @@ export default async function ProjectPage({ params }: Props) {
   setRequestLocale(locale);
   
   // Parallélisation des requêtes indépendantes
-  const [t, tDetail, project, allProjects] = await Promise.all([
+  const [t, tDetail, tA11y, project, allProjects] = await Promise.all([
     getTranslations('nav'),
     getTranslations('projectDetail'),
+    getTranslations('a11y'),
     getProjectBySlug(slug),
     getProjects()
   ])
@@ -76,7 +77,11 @@ export default async function ProjectPage({ params }: Props) {
 
           {/* Right column - scrollable medias */}
           <div className="lg:ml-[35%] lg:mr-[15%] flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 lg:pt-56">
-            <MediaGallery medias={medias} projectTitle={project.title} />
+            <MediaGallery 
+              medias={medias} 
+              projectTitle={project.title} 
+              videoAriaLabel={tA11y('projectVideo', { title: project.title })}
+            />
             
             <ProjectFooter 
               nextProjectSlug={nextProject?.slug}

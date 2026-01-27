@@ -35,6 +35,15 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
+h1 span, h2 span, h3 span, h4 span, h5 span, h6 span {
+  font-family: inherit;
+}
+
+*::selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -91,5 +100,85 @@ h1, h2, h3, h4, h5, h6 {
   ::view-transition-new(root) {
     animation: none;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   REUSABLE COMPONENT STYLES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Display headings - large titles */
+.heading-display {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+}
+
+@media (min-width: 640px) {
+  .heading-display { font-size: 3.75rem; }
+}
+@media (min-width: 1024px) {
+  .heading-display { font-size: 3rem; }
+}
+@media (min-width: 1280px) {
+  .heading-display { font-size: 3.75rem; }
+}
+
+/* Label styles - small uppercase text */
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.text-label-sm {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Button base styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.btn-primary {
+  padding: 0.625rem 1.25rem;
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+.btn-primary:hover {
+  opacity: 0.8;
+}
+
+.btn-outline {
+  padding: 0.625rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  color: var(--color-muted);
 }
 

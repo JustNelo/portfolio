@@ -14,23 +14,24 @@ interface GalleryMedia {
 interface MediaGalleryProps {
   medias: GalleryMedia[]
   projectTitle: string
+  videoAriaLabel: string
 }
 
-export default function MediaGallery({ medias, projectTitle }: MediaGalleryProps) {
+export default function MediaGallery({ medias, projectTitle, videoAriaLabel }: MediaGalleryProps) {
   if (medias.length === 0) return null
 
   return (
     <div className="space-y-6 lg:space-y-10">
       {medias.map((media, index) => (
         <FadeIn key={media.id} delay={0.1 + index * 0.03}>
-          <MediaItem media={media} projectTitle={projectTitle} isFirst={index === 0} />
+          <MediaItem media={media} projectTitle={projectTitle} isFirst={index === 0} videoAriaLabel={videoAriaLabel} />
         </FadeIn>
       ))}
     </div>
   )
 }
 
-function MediaItem({ media, projectTitle, isFirst }: { media: GalleryMedia; projectTitle: string; isFirst: boolean }) {
+function MediaItem({ media, projectTitle, isFirst, videoAriaLabel }: { media: GalleryMedia; projectTitle: string; isFirst: boolean; videoAriaLabel: string }) {
   return (
     <figure className="group">
       <div className="relative aspect-16/10 bg-card overflow-hidden">
@@ -52,6 +53,7 @@ function MediaItem({ media, projectTitle, isFirst }: { media: GalleryMedia; proj
             muted
             playsInline
             className="w-full h-full object-cover"
+            aria-label={media.alt || videoAriaLabel}
           />
         )}
         {media.duration && (

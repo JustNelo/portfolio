@@ -61,6 +61,8 @@
     "sceneLoading": "Chargement de la scène 3D",
     "sceneError": "Erreur de chargement de la scène 3D",
     "sceneUnavailable": "Scène 3D indisponible",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "externalLink": "{name} (s'ouvre dans un nouvel onglet)",
+    "projectVideo": "Vidéo du projet {title}"
   }
 }
