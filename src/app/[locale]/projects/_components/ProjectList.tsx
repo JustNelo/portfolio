@@ -25,6 +25,16 @@ export default function ProjectList({ projects, locale }: ProjectListProps) {
     navigate(`/projects/${slug}`)
   }
 
+  if (projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <span className="font-mono text-sm text-muted">
+          {locale === 'en' ? 'No projects available yet.' : 'Aucun projet disponible pour le moment.'}
+        </span>
+      </div>
+    )
+  }
+
   return (
     <nav className="flex flex-col gap-2">
       {projects.map((project, index) => {
