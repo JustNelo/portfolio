@@ -44,9 +44,8 @@ function isEducation(item: TimelineItem): item is Education {
 }
 
 function TimelineEntry({ item, index, type, locale }: TimelineEntryProps) {
-  const displayYear = type === 'EXP' 
-    ? item.period.split(' - ')[0] 
-    : item.period.split(' - ')[1]
+  const periodParts = item.period.split(' - ')
+  const displayYear = periodParts[1] ?? periodParts[0]
   const yearsCount = calculateYears(item.period)
   const offset = OFFSET_PATTERNS[index % OFFSET_PATTERNS.length]
   
@@ -75,7 +74,7 @@ function TimelineEntry({ item, index, type, locale }: TimelineEntryProps) {
         </div>
       </div>
       
-      <div className="mt-3 sm:mt-4 md:mt-6 max-w-sm">
+      <div className="mt-3 sm:mt-4 md:mt-6 max-w-xl">
         <p className="font-mono text-[10px] sm:text-xs text-white/50 mb-2 sm:mb-3 tracking-wide">
           {subtitle} — {item.period}
         </p>
@@ -120,7 +119,7 @@ export default async function AboutContent({ skills, experiences, education, loc
   const t = await getTranslations('about')
 
   return (
-    <div className="flex flex-col pt-4 sm:pt-16 pb-8 sm:pb-16">
+    <div className="flex flex-col pt-4 sm:pt-12 pb-8 sm:pb-16">
       
       <section className="relative py-4 sm:py-12 mb-4 sm:mb-8 px-4 sm:px-0">
         <FadeIn className="relative">
