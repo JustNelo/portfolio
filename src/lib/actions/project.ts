@@ -25,7 +25,6 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
     responsibilities: JSON.parse((formData.get('responsibilities') as string) || '[]'),
     development: (formData.get('development') as string) || null,
     external_url: (formData.get('external_url') as string) || null,
-    // English translations
     title_en: (formData.get('title_en') as string) || '',
     description_en: (formData.get('description_en') as string) || '',
     category_en: (formData.get('category_en') as string) || '',
@@ -33,28 +32,24 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
     development_en: (formData.get('development_en') as string) || '',
   }
 
-  // Validate form data with Zod
-  const validation = await validateFormData(projectSchema, rawData)
+    const validation = await validateFormData(projectSchema, rawData)
   if (!validation.success) return validation
 
   const validatedData = validation.data
 
-  // Get media files
-  const mediaFiles = formData.getAll('medias') as File[]
+    const mediaFiles = formData.getAll('medias') as File[]
 
-  // Step A: Upload media files to storage
-  const uploadedMedias: { url: string; type: 'image' | 'video'; order: number }[] = []
+    const uploadedMedias: { url: string; type: 'image' | 'video'; order: number }[] = []
 
   for (let i = 0; i < mediaFiles.length; i++) {
     const file = mediaFiles[i]
     if (!file || file.size === 0) continue
 
-    // Security: Validate file type and size
-    if (!isValidMediaType(file.type)) {
-      return { success: false, message: `Type de fichier non autorisé: ${file.type}` }
+        if (!isValidMediaType(file.type)) {
+      return { success: false, message: `Invalid file type: ${file.type}` }
     }
     if (file.size > MAX_FILE_SIZE) {
-      return { success: false, message: `Fichier trop volumineux: ${file.name} (max 10MB)` }
+      return { success: false, message: `File too large: ${file.name} (max 10MB)` }
     }
 
     const fileExt = file.name.split('.').pop()
@@ -72,7 +67,7 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
-      return { success: false, message: `Erreur upload fichier ${file.name}: ${uploadError.message}` }
+      return { success: false, message: `Upload error ${file.name}: ${uploadError.message}` }
     }
 
     const { data: urlData } = supabase.storage
@@ -88,8 +83,7 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
     })
   }
 
-  // Step B: Insert project into database
-  const { data: project, error: projectError } = await supabase
+    const { data: project, error: projectError } = await supabase
     .from('projects')
     .insert({
       title: validatedData.title,
@@ -114,11 +108,10 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
 
   if (projectError) {
     console.error('Project insert error:', projectError)
-    return { success: false, message: `Erreur création projet: ${projectError.message}` }
+    return { success: false, message: `Project creation error: ${projectError.message}` }
   }
 
-  // Step C: Insert media entries
-  if (uploadedMedias.length > 0) {
+    if (uploadedMedias.length > 0) {
     const { error: mediaError } = await supabase
       .from('project_medias')
       .insert(uploadedMedias.map((media) => ({
@@ -130,32 +123,30 @@ export async function createProject(formData: FormData): Promise<ProjectActionRe
 
     if (mediaError) {
       console.error('Media insert error:', mediaError)
-      return { success: false, message: `Erreur insertion médias: ${mediaError.message}` }
+      return { success: false, message: `Media insertion error: ${mediaError.message}` }
     }
   }
 
     revalidatePath('/projects')
     revalidatePath(`/projects/${validatedData.slug}`)
 
-    return { success: true, message: 'Projet créé avec succès!', slug: validatedData.slug }
+    return { success: true, message: 'Project created successfully!', slug: validatedData.slug }
   })
 }
 
 export async function deleteProject(id: string): Promise<ActionResponse> {
   return withAuth(async (supabase) => {
-    // Step 1: Get project info to find the slug (folder name in storage)
-  const { data: project, error: projectFetchError } = await supabase
+      const { data: project, error: projectFetchError } = await supabase
     .from('projects')
     .select('slug')
     .eq('id', id)
     .single()
 
   if (projectFetchError || !project) {
-    return { success: false, message: 'Projet introuvable.' }
+    return { success: false, message: 'Project not found.' }
   }
 
-  // Step 2: List all files in the project folder in storage
-  const { data: files, error: listError } = await supabase.storage
+    const { data: files, error: listError } = await supabase.storage
     .from('projects')
     .list(project.slug)
 
@@ -163,8 +154,7 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     console.error('Error listing files:', listError)
   }
 
-  // Step 3: Delete all files from storage (cleanup)
-  if (files && files.length > 0) {
+    if (files && files.length > 0) {
     const filePaths = files.map((file) => `${project.slug}/${file.name}`)
     const { error: deleteFilesError } = await supabase.storage
       .from('projects')
@@ -175,8 +165,7 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     }
   }
 
-  // Step 4: Delete medias from database (foreign key constraint)
-  const { error: mediasError } = await supabase
+    const { error: mediasError } = await supabase
     .from('project_medias')
     .delete()
     .eq('project_id', id)
@@ -185,8 +174,7 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     return { success: false, message: mediasError.message }
   }
 
-  // Step 5: Delete project from database
-  const { error: projectError } = await supabase
+    const { error: projectError } = await supabase
     .from('projects')
     .delete()
     .eq('id', id)
@@ -198,24 +186,22 @@ export async function deleteProject(id: string): Promise<ActionResponse> {
     revalidatePath('/projects')
     revalidatePath('/admin/projects')
 
-    return { success: true, message: 'Projet et fichiers supprimés.' }
+    return { success: true, message: 'Project and files deleted.' }
   })
 }
 
 export async function updateProject(id: string, formData: FormData): Promise<ProjectActionResponse> {
   return withAuth(async (supabase) => {
-    // Get existing project
-  const { data: existingProject, error: fetchError } = await supabase
+      const { data: existingProject, error: fetchError } = await supabase
     .from('projects')
     .select('slug')
     .eq('id', id)
     .single()
 
   if (fetchError || !existingProject) {
-    return { success: false, message: 'Projet introuvable.' }
+    return { success: false, message: 'Project not found.' }
   }
 
-  // Extract form fields
   const rawData = {
     title: formData.get('title') as string,
     slug: formData.get('slug') as string,
@@ -227,7 +213,6 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
     responsibilities: JSON.parse((formData.get('responsibilities') as string) || '[]'),
     development: (formData.get('development') as string) || null,
     external_url: (formData.get('external_url') as string) || null,
-    // English translations
     title_en: (formData.get('title_en') as string) || '',
     description_en: (formData.get('description_en') as string) || '',
     category_en: (formData.get('category_en') as string) || '',
@@ -235,61 +220,50 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
     development_en: (formData.get('development_en') as string) || '',
   }
 
-  // Validate form data with Zod
-  const validation = await validateFormData(updateProjectSchema, rawData)
+    const validation = await validateFormData(updateProjectSchema, rawData)
   if (!validation.success) return validation
 
   const validatedData = validation.data
 
-  // Get existing medias with their new order
-  const existingMediasOrder = JSON.parse(
+    const existingMediasOrder = JSON.parse(
     (formData.get('existing_medias_order') as string) || '[]'
   ) as { id: string; order: number }[]
   
-  // Get new media order positions
-  const newMediasOrder = JSON.parse(
+    const newMediasOrder = JSON.parse(
     (formData.get('new_medias_order') as string) || '[]'
   ) as number[]
 
-  // Get new media files
-  const newMediaFiles = formData.getAll('new_medias') as File[]
+    const newMediaFiles = formData.getAll('new_medias') as File[]
   
-  // Extract IDs of medias to keep
-  const keepMediaIds = existingMediasOrder.map((m) => m.id)
+    const keepMediaIds = existingMediasOrder.map((m) => m.id)
 
-  // Step 1: Get current medias
-  const { data: currentMedias } = await supabase
+    const { data: currentMedias } = await supabase
     .from('project_medias')
     .select('id, url')
     .eq('project_id', id)
 
-  // Step 2: Delete removed medias from storage and database
-  if (currentMedias) {
+    if (currentMedias) {
     const mediasToDelete = currentMedias.filter((m) => !keepMediaIds.includes(m.id))
 
     for (const media of mediasToDelete) {
-      // Extract file path from URL
-      const urlParts = media.url.split('/projects/')
+            const urlParts = media.url.split('/projects/')
       if (urlParts[1]) {
         const filePath = urlParts[1]
         await supabase.storage.from('projects').remove([filePath])
       }
 
-      // Delete from database
-      await supabase.from('project_medias').delete().eq('id', media.id)
+            await supabase.from('project_medias').delete().eq('id', media.id)
     }
   }
 
-  // Step 3: Update order of existing medias
-  for (const mediaOrder of existingMediasOrder) {
+    for (const mediaOrder of existingMediasOrder) {
     await supabase
       .from('project_medias')
       .update({ order: mediaOrder.order })
       .eq('id', mediaOrder.id)
   }
 
-  // Step 4: Upload new media files with correct order
-  const uploadedMedias: { url: string; type: 'image' | 'video'; order: number }[] = []
+    const uploadedMedias: { url: string; type: 'image' | 'video'; order: number }[] = []
 
   for (let i = 0; i < newMediaFiles.length; i++) {
     const file = newMediaFiles[i]
@@ -310,7 +284,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
-      return { success: false, message: `Erreur upload fichier ${file.name}: ${uploadError.message}` }
+      return { success: false, message: `Upload error ${file.name}: ${uploadError.message}` }
     }
 
     const { data: urlData } = supabase.storage
@@ -319,8 +293,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
 
     const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image'
     
-    // Use the order from newMediasOrder array
-    const order = newMediasOrder[i] ?? (existingMediasOrder.length + i)
+        const order = newMediasOrder[i] ?? (existingMediasOrder.length + i)
 
     uploadedMedias.push({
       url: urlData.publicUrl,
@@ -329,8 +302,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
     })
   }
 
-  // Step 5: Update project in database
-  const { error: projectError } = await supabase
+    const { error: projectError } = await supabase
     .from('projects')
     .update({
       title: validatedData.title,
@@ -354,11 +326,10 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
 
   if (projectError) {
     console.error('Project update error:', projectError)
-    return { success: false, message: `Erreur mise à jour projet: ${projectError.message}` }
+    return { success: false, message: `Project update error: ${projectError.message}` }
   }
 
-  // Step 6: Insert new media entries
-  if (uploadedMedias.length > 0) {
+    if (uploadedMedias.length > 0) {
     const { error: mediaError } = await supabase
       .from('project_medias')
       .insert(uploadedMedias.map((media) => ({
@@ -370,7 +341,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
 
     if (mediaError) {
       console.error('Media insert error:', mediaError)
-      return { success: false, message: `Erreur insertion médias: ${mediaError.message}` }
+      return { success: false, message: `Media insertion error: ${mediaError.message}` }
     }
   }
 
@@ -379,7 +350,7 @@ export async function updateProject(id: string, formData: FormData): Promise<Pro
     revalidatePath('/admin/projects')
     revalidatePath(`/admin/projects/${id}`)
 
-    return { success: true, message: 'Projet mis à jour avec succès!', slug: validatedData.slug }
+    return { success: true, message: 'Project updated successfully!', slug: validatedData.slug }
   })
 }
 
@@ -409,7 +380,6 @@ export async function getProjects(): Promise<ProjectListItem[]> {
   return data as ProjectListItem[]
 }
 
-// Full query for admin pages that need all data
 export async function getProjectsFull(): Promise<ProjectWithMedias[]> {
   const supabase = await createClient()
 

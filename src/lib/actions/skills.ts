@@ -44,12 +44,12 @@ export async function addSkill(formData: FormData): Promise<ActionResponse<Skill
 
     if (error) {
       console.error('Skill insert error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Compétence ajoutée!', data: transformSkill(data as SkillRow) }
+    return { success: true, message: 'Skill added!', data: transformSkill(data as SkillRow) }
   })
 }
 
@@ -75,12 +75,12 @@ export async function updateSkill(formData: FormData): Promise<ActionResponse> {
 
     if (error) {
       console.error('Skill update error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Compétence mise à jour!' }
+    return { success: true, message: 'Skill updated!' }
   })
 }
 
@@ -90,11 +90,11 @@ export async function deleteSkill(id: string): Promise<ActionResponse> {
 
     if (error) {
       console.error('Skill delete error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Compétence supprimée!' }
+    return { success: true, message: 'Skill deleted!' }
   })
 }

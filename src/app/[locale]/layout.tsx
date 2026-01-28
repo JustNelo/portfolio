@@ -24,10 +24,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const messages = await getMessages();
   const metadata = messages.metadata as { title: string; description: string };
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!;
 
   return {
+    metadataBase: new URL(baseUrl),
     title: metadata.title,
     description: metadata.description,
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        'fr': '/fr',
+        'en': '/en',
+      },
+    },
+    openGraph: {
+      title: metadata.title,
+      description: metadata.description,
+      locale: locale === 'en' ? 'en_US' : 'fr_FR',
+      alternateLocale: locale === 'en' ? 'fr_FR' : 'en_US',
+      type: 'website',
+    },
   };
 }
 

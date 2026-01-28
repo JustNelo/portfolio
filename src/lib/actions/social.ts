@@ -43,12 +43,12 @@ export async function addSocial(formData: FormData): Promise<ActionResponse<Soci
 
     if (error) {
       console.error('Social insert error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Lien social ajouté!', data: transformSocial(data as SocialRow) }
+    return { success: true, message: 'Social link added!', data: transformSocial(data as SocialRow) }
   })
 }
 
@@ -73,12 +73,12 @@ export async function updateSocial(formData: FormData): Promise<ActionResponse> 
 
     if (error) {
       console.error('Social update error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Lien social mis à jour!' }
+    return { success: true, message: 'Social link updated!' }
   })
 }
 
@@ -88,11 +88,11 @@ export async function deleteSocial(id: string): Promise<ActionResponse> {
 
     if (error) {
       console.error('Social delete error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Lien social supprimé!' }
+    return { success: true, message: 'Social link deleted!' }
   })
 }

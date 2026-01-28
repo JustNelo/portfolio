@@ -95,12 +95,12 @@ export async function addTimelineItem(formData: FormData): Promise<ActionRespons
 
     if (error) {
       console.error('Timeline insert error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Élément ajouté au parcours!', data: transformTimeline(data as TimelineRow) }
+    return { success: true, message: 'Timeline item added!', data: transformTimeline(data as TimelineRow) }
   })
 }
 
@@ -145,12 +145,12 @@ export async function updateTimelineItem(formData: FormData): Promise<ActionResp
 
     if (error) {
       console.error('Timeline update error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Élément mis à jour!' }
+    return { success: true, message: 'Timeline item updated!' }
   })
 }
 
@@ -160,11 +160,11 @@ export async function deleteTimelineItem(id: string): Promise<ActionResponse> {
 
     if (error) {
       console.error('Timeline delete error:', error)
-      return { success: false, message: `Erreur: ${error.message}` }
+      return { success: false, message: `Error: ${error.message}` }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Élément supprimé du parcours!' }
+    return { success: true, message: 'Timeline item deleted!' }
   })
 }

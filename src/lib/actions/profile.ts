@@ -75,7 +75,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
 
       if (error) {
         console.error('Profile update error:', error)
-        return { success: false, message: `Erreur: ${error.message}` }
+        return { success: false, message: `Error: ${error.message}` }
       }
     } else {
       const { error } = await supabase.from('profile').insert({
@@ -92,12 +92,12 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
 
       if (error) {
         console.error('Profile insert error:', error)
-        return { success: false, message: `Erreur: ${error.message}` }
+        return { success: false, message: `Error: ${error.message}` }
       }
     }
 
     await revalidateGroup('about')
 
-    return { success: true, message: 'Profil mis à jour avec succès!' }
+    return { success: true, message: 'Profile updated successfully!' }
   })
 }

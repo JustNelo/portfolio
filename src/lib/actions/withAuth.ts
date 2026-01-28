@@ -30,7 +30,7 @@ type AuthenticatedAction<T> = (
  *   return withAuth(async (supabase, user) => {
  *     const { error } = await supabase.from('projects').delete().eq('id', id)
  *     if (error) return { success: false, message: error.message }
- *     return { success: true, message: 'Projet supprimé.' }
+ *     return { success: true, message: 'Project deleted.' }
  *   })
  * }
  * ```
@@ -45,7 +45,7 @@ export async function withAuth<T>(
     if (authError || !user) {
       return { 
         success: false, 
-        message: 'Non autorisé. Veuillez vous connecter.' 
+        message: 'Unauthorized. Please log in.' 
       }
     }
 
@@ -54,7 +54,7 @@ export async function withAuth<T>(
     console.error('withAuth error:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Erreur interne du serveur.'
+      message: error instanceof Error ? error.message : 'Internal server error.'
     }
   }
 }
@@ -72,7 +72,7 @@ export async function withSupabase<T>(
     console.error('withSupabase error:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Erreur interne du serveur.'
+      message: error instanceof Error ? error.message : 'Internal server error.'
     }
   }
 }

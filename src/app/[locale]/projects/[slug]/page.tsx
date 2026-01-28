@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getProjectBySlug, getProjects } from '@/lib/actions/project'
 import { notFound } from 'next/navigation'
@@ -14,12 +15,43 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const project = await getProjectBySlug(slug);
+  
+  if (!project) {
+    return { title: 'Project Not Found' };
+  }
+
+  const title = locale === 'en' && project.title_en ? project.title_en : project.title;
+  const description = locale === 'en' && project.description_en ? project.description_en : project.description;
+  const firstImage = project.project_medias?.find(m => m.type === 'image')?.url;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/projects/${slug}`,
+      languages: {
+        'fr': `/fr/projects/${slug}`,
+        'en': `/en/projects/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      locale: locale === 'en' ? 'en_US' : 'fr_FR',
+      images: firstImage ? [{ url: firstImage }] : undefined,
+    },
+  };
+}
+
 export default async function ProjectPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   
-  // Parallélisation des requêtes indépendantes
-  const [t, tDetail, tA11y, project, allProjects] = await Promise.all([
+    const [t, tDetail, tA11y, project, allProjects] = await Promise.all([
     getTranslations('nav'),
     getTranslations('projectDetail'),
     getTranslations('a11y'),
@@ -31,15 +63,12 @@ export default async function ProjectPage({ params }: Props) {
     notFound()
   }
 
-  // Médias déjà triés par la requête Supabase (order ASC)
   const medias = project.project_medias || []
 
-  // Trouver le projet suivant
   const currentIndex = allProjects.findIndex(p => p.slug === slug)
   const nextProject = currentIndex >= 0 && currentIndex < allProjects.length - 1
     ? allProjects[currentIndex + 1]
-    : allProjects[0] // Boucle vers le premier si dernier projet
-
+    : allProjects[0] 
   return (
     <main className="relative min-h-screen">
         <NavBar 
@@ -49,10 +78,8 @@ export default async function ProjectPage({ params }: Props) {
         />
 
         <div className="flex flex-col lg:flex-row min-h-screen">
-          {/* Left column - fixed on desktop */}
-          <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen p-6 sm:p-8 lg:p-10 xl:p-14 flex flex-col">
-            {/* Top: Title + Description */}
-            <div className="pt-12 lg:pt-0">
+                    <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen p-6 sm:p-8 lg:p-10 xl:p-14 flex flex-col">
+                        <div className="pt-12 lg:pt-0">
               <ProjectHeader 
                 title={locale === 'en' && project.title_en ? project.title_en : project.title} 
               />
@@ -64,8 +91,7 @@ export default async function ProjectPage({ params }: Props) {
               </FadeIn>
             </div>
 
-            {/* Bottom: Metadata */}
-            <div className="mt-auto">
+                        <div className="mt-auto">
               <ProjectMetadata
                 agency={project.agency}
                 client={project.client}
@@ -75,8 +101,7 @@ export default async function ProjectPage({ params }: Props) {
             </div>
           </aside>
 
-          {/* Right column - scrollable medias */}
-          <div className="lg:ml-[35%] lg:mr-[15%] flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 lg:pt-56">
+                    <div className="lg:ml-[35%] lg:mr-[15%] flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 lg:pt-56">
             <MediaGallery 
               medias={medias} 
               projectTitle={project.title} 

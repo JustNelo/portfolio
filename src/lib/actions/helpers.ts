@@ -20,7 +20,7 @@ export async function revalidateGroup(group: RevalidationGroup): Promise<void> {
 // ERROR HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
 export async function handleError(error: unknown, context: string): Promise<{ success: false; message: string }> {
-  const message = error instanceof Error ? error.message : 'Erreur inconnue'
+  const message = error instanceof Error ? error.message : 'Unknown error'
   console.error(`${context}:`, error)
-  return { success: false, message: `Erreur: ${message}` }
+  return { success: false, message: `Error: ${message}` }
 }
