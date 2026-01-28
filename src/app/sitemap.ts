@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+
+export const dynamic = 'force-static'
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!
@@ -21,7 +24,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let projectEntries: MetadataRoute.Sitemap = []
   
   try {
-    const supabase = await createClient()
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
     const { data: projects } = await supabase
       .from('projects')
       .select('slug, created_at')
