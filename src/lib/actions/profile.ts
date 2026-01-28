@@ -1,6 +1,8 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/static'
 import { revalidateGroup } from './helpers'
 import { validateFormData } from '@/lib/validations/utils'
 import { withAuth, type ActionResponse } from './withAuth'
@@ -11,25 +13,27 @@ import {
   type ProfileRow,
 } from '@/lib/validations/about'
 
+const getCachedProfile = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('profile')
+      .select('*')
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching profile:', error)
+      return null
+    }
+    return data ? transformProfile(data as ProfileRow) : null
+  },
+  ['profile'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
 export async function getProfile(): Promise<Profile | null> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('profile')
-    .select('*')
-    .limit(1)
-    .maybeSingle()
-
-  if (error) {
-    console.error('Error fetching profile:', error)
-    return null
-  }
-
-  if (!data) {
-    return null
-  }
-
-  return transformProfile(data as ProfileRow)
+  return getCachedProfile()
 }
 
 export async function updateProfile(formData: FormData): Promise<ActionResponse> {

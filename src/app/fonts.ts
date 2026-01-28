@@ -6,6 +6,7 @@ export const anton = Anton({
   subsets: ["latin"],
   display: "swap",
   weight: "400",
+  preload: false,
 });
 
 // Body font
@@ -13,5 +14,6 @@ export const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500"],
+  preload: false,
 });

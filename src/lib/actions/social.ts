@@ -1,6 +1,8 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/static'
 import { revalidateGroup } from './helpers'
 import { validateFormData } from '@/lib/validations/utils'
 import { withAuth, type ActionResponse } from './withAuth'
@@ -12,20 +14,26 @@ import {
   type SocialRow,
 } from '@/lib/validations/about'
 
+const getCachedSocials = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('socials')
+      .select('*')
+      .order('order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching socials:', error)
+      return []
+    }
+    return (data as SocialRow[]).map(transformSocial)
+  },
+  ['socials'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
 export async function getSocials(): Promise<Social[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('socials')
-    .select('*')
-    .order('order', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching socials:', error)
-    return []
-  }
-
-  return (data as SocialRow[]).map(transformSocial)
+  return getCachedSocials()
 }
 
 export async function addSocial(formData: FormData): Promise<ActionResponse<Social>> {

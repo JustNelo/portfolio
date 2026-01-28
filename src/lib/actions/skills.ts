@@ -1,6 +1,8 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/static'
 import { revalidateGroup } from './helpers'
 import { validateFormData } from '@/lib/validations/utils'
 import { withAuth, type ActionResponse } from './withAuth'
@@ -12,20 +14,26 @@ import {
   type SkillRow,
 } from '@/lib/validations/about'
 
+const getCachedSkills = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .order('order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching skills:', error)
+      return []
+    }
+    return (data as SkillRow[]).map(transformSkill)
+  },
+  ['skills'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
 export async function getSkills(): Promise<Skill[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('skills')
-    .select('*')
-    .order('order', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching skills:', error)
-    return []
-  }
-
-  return (data as SkillRow[]).map(transformSkill)
+  return getCachedSkills()
 }
 
 export async function addSkill(formData: FormData): Promise<ActionResponse<Skill>> {

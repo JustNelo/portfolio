@@ -1,6 +1,8 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/static'
 import { revalidateGroup } from './helpers'
 import { validateFormData } from '@/lib/validations/utils'
 import { withAuth, type ActionResponse } from './withAuth'
@@ -12,54 +14,72 @@ import {
   type TimelineRow,
 } from '@/lib/validations/about'
 
+const getCachedTimeline = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('timeline')
+      .select('*')
+      .order('order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching timeline:', error)
+      return []
+    }
+    return (data as TimelineRow[]).map(transformTimeline)
+  },
+  ['timeline'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
+const getCachedExperiences = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('timeline')
+      .select('*')
+      .eq('type', 'experience')
+      .order('order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching experiences:', error)
+      return []
+    }
+    return (data as TimelineRow[]).map(transformTimeline)
+  },
+  ['experiences'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
+const getCachedEducation = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('timeline')
+      .select('*')
+      .eq('type', 'education')
+      .order('order', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching education:', error)
+      return []
+    }
+    return (data as TimelineRow[]).map(transformTimeline)
+  },
+  ['education'],
+  { revalidate: 3600, tags: ['about'] }
+)
+
 export async function getTimeline(): Promise<TimelineItem[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('timeline')
-    .select('*')
-    .order('order', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching timeline:', error)
-    return []
-  }
-
-  return (data as TimelineRow[]).map(transformTimeline)
+  return getCachedTimeline()
 }
 
 export async function getExperiences(): Promise<TimelineItem[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('timeline')
-    .select('*')
-    .eq('type', 'experience')
-    .order('order', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching experiences:', error)
-    return []
-  }
-
-  return (data as TimelineRow[]).map(transformTimeline)
+  return getCachedExperiences()
 }
 
 export async function getEducation(): Promise<TimelineItem[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('timeline')
-    .select('*')
-    .eq('type', 'education')
-    .order('order', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching education:', error)
-    return []
-  }
-
-  return (data as TimelineRow[]).map(transformTimeline)
+  return getCachedEducation()
 }
 
 export async function addTimelineItem(formData: FormData): Promise<ActionResponse<TimelineItem>> {

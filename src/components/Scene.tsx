@@ -8,6 +8,7 @@ import CameraController from '@/components/CameraController'
 import PostProcessingEffects from '@/components/PostProcessingEffects'
 import Loader from '@/components/ui/Loader/index'
 import { useSceneStore, getHasCompletedFirstLoad, setHasCompletedFirstLoad } from '@/stores/useSceneStore'
+import { useIsMobile } from '@/hooks'
 
 // Minimum time to show loader for smooth UX (in ms)
 const MIN_LOADER_DURATION = 2500
@@ -31,7 +32,17 @@ export default function Scene({ withLoader = true }: SceneProps): React.JSX.Elem
   
   // Always render at full frameloop to pre-warm GPU, but keep scene hidden
   const [isVisible, setIsVisible] = useState(isReturningVisitor)
+  const isMobile = useIsMobile()
   const [dpr, setDpr] = useState<[number, number]>([1, 1.5])
+  
+  // Proactively reduce DPR on mobile to save GPU/battery
+  useEffect(() => {
+    if (isMobile) {
+      setDpr([0.75, 1])
+    } else {
+      setDpr([1, 1.5])
+    }
+  }, [isMobile])
   const [showLoader, setShowLoader] = useState(!isReturningVisitor)
   const [minTimeElapsed, setMinTimeElapsed] = useState(isReturningVisitor)
   const [canReveal, setCanReveal] = useState(isReturningVisitor)

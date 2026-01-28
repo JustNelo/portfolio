@@ -14,65 +14,35 @@ const intlMiddleware = createIntlMiddleware({
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip i18n for admin and api routes
   const isAdminRoute = pathname.startsWith('/admin')
   const isApiRoute = pathname.startsWith('/api')
 
-  // Handle i18n for public routes
+  // Public routes: only i18n, no auth overhead
   if (!isAdminRoute && !isApiRoute) {
-    const intlResponse = intlMiddleware(request)
-    
-    // Add Supabase auth refresh to intl response
-    const supabase = createServerClient(
-      env.NEXT_PUBLIC_SUPABASE_URL,
-      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              intlResponse.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-    
-    // Refresh session
-    await supabase.auth.getUser()
-    
-    return intlResponse
+    return intlMiddleware(request)
   }
 
-  // Admin/API routes - standard Supabase handling
-  let supabaseResponse = NextResponse.next({ request })
+  // Admin/API routes: Supabase auth handling
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Protect /admin routes
   if (isAdminRoute && !user) {
@@ -81,7 +51,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {

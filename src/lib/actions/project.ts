@@ -1,6 +1,8 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/static'
 import { projectSchema, updateProjectSchema, isValidMediaType, MAX_FILE_SIZE } from '@/lib/validations/project'
 import { revalidatePath } from 'next/cache'
 import { withAuth, type ActionResponse } from './withAuth'
@@ -364,20 +366,26 @@ export interface ProjectListItem {
   year: number
 }
 
+const getCachedProjects = unstable_cache(
+  async () => {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, slug, title, title_en, category, category_en, year')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching projects:', error)
+      return []
+    }
+    return data as ProjectListItem[]
+  },
+  ['projects-list'],
+  { revalidate: 3600, tags: ['projects'] }
+)
+
 export async function getProjects(): Promise<ProjectListItem[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('projects')
-    .select('id, slug, title, title_en, category, category_en, year')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching projects:', error)
-    return []
-  }
-
-  return data as ProjectListItem[]
+  return getCachedProjects()
 }
 
 export async function getProjectsFull(): Promise<ProjectWithMedias[]> {
