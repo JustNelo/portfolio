@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: metadata.title,
     description: metadata.description,
     alternates: {
-      canonical: `/${locale}`,
+      canonical: './',
       languages: {
         'fr': '/fr',
         'en': '/en',
