@@ -11,6 +11,7 @@ import SceneFallback from "@/components/ui/SceneFallback";
 import { ErrorBoundary, SceneErrorFallback } from "@/components/ui/ErrorBoundary";
 import { locales, type Locale } from '@/lib/i18n/config';
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 type Props = {
   children: React.ReactNode;
@@ -72,6 +73,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           {children}
         </NextIntlClientProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
