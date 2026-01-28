@@ -23,7 +23,6 @@
     "next": "16.1.1",
     "next-intl": "^4.7.0",
     "postprocessing": "^6.38.2",
-    "r3f-perf": "^7.2.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "three": "^0.182.0",
