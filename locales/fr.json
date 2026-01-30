@@ -1,7 +1,8 @@
 {
   "metadata": {
-    "title": "Portfolio - Léon Gallet",
-    "description": "From sapiens to Ludens."
+    "title": "Léon Gallet - Développeur Fullstack",
+    "description": "Portfolio de Léon Gallet, Développeur Web Fullstack.",
+    "ogAlt": "Portfolio de Léon Gallet - Développeur Fullstack"
   },
   "nav": {
     "projects": "Projets",
