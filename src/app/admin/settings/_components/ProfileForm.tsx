@@ -76,7 +76,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name fields - not translatable */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Prénom
@@ -196,7 +196,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       </div>
 
       {/* CTA - translatable text, shared link */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-2">
             Texte du CTA {activeLang === 'en' && '- EN'}

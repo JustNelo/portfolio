@@ -25,7 +25,7 @@ export default async function AdminAboutPage() {
       </div>
 
       {/* Grid layout for cards */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 max-w-5xl">
         {/* Profile - Full width */}
         <section className="xl:col-span-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 lg:p-6 space-y-4">
           <div className="flex items-center gap-3">
