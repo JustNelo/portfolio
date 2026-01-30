@@ -77,9 +77,9 @@ export default async function ProjectPage({ params }: Props) {
           ]} 
         />
 
-        <div className="flex flex-col lg:flex-row min-h-screen">
-                    <aside className="lg:fixed lg:top-0 lg:left-0 lg:w-[40%] xl:w-[35%] lg:h-screen p-6 sm:p-8 lg:p-10 xl:p-14 flex flex-col">
-                        <div className="pt-12 lg:pt-0">
+        <div className="flex flex-col 2xl:flex-row min-h-screen">
+                    <aside className="2xl:fixed 2xl:top-0 2xl:left-0 2xl:w-[35%] 2xl:h-screen p-6 sm:p-8 md:p-10 2xl:p-14 flex flex-col">
+                        <div className="pt-12 2xl:pt-0">
               <ProjectHeader 
                 title={locale === 'en' && project.title_en ? project.title_en : project.title} 
               />
@@ -101,7 +101,7 @@ export default async function ProjectPage({ params }: Props) {
             </div>
           </aside>
 
-                    <div className="lg:ml-[35%] lg:mr-[15%] flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 lg:pt-56">
+                    <div className="flex-1 px-4 sm:px-6 md:px-8 2xl:px-12 pt-8 2xl:pt-56 2xl:ml-[35%] 2xl:mr-[15%]">
             <MediaGallery 
               medias={medias} 
               projectTitle={project.title} 

@@ -23,17 +23,17 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
         ]} 
       />
 
-      <div className="hidden sm:block fixed top-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
-        <div className="grid grid-cols-24 gap-8 md:gap-16">
-          <div className="col-span-12 md:col-span-11 lg:col-span-10 pointer-events-auto">
+      <div className="hidden 2xl:block fixed top-0 left-0 right-0 z-10 p-6 2xl:p-12 pointer-events-none">
+        <div className="grid grid-cols-24 gap-8 2xl:gap-16">
+          <div className="col-span-10 pointer-events-auto">
             <AboutHeader profile={profile} locale={locale} />
           </div>
         </div>
       </div>
 
       <InfiniteScroll>
-        <div className="relative sm:pt-20 pb-0 sm:pb-20">
-          <div className="sm:hidden p-4 pt-12">
+        <div className="relative 2xl:pt-20 pb-0 2xl:pb-20">
+          <div className="2xl:hidden p-4 sm:p-0">
             <AboutHeader profile={profile} locale={locale} />
           </div>
           <AboutContent 
@@ -42,15 +42,15 @@ export default async function AboutSection(): Promise<React.JSX.Element> {
             education={education}
             locale={locale}
           />
-          <div className="sm:hidden p-4 mt-4">
+          <div className="2xl:hidden p-4 sm:p-0 mb-8">
             <AboutFooter socials={socials} />
           </div>
         </div>
       </InfiniteScroll>
 
-      <div className="hidden sm:block fixed bottom-0 left-0 right-0 z-10 p-6 md:p-10 lg:p-12 pointer-events-none">
-        <div className="grid grid-cols-24 gap-8 md:gap-16">
-          <div className="col-span-10 md:col-span-7 pointer-events-auto">
+      <div className="hidden 2xl:block fixed bottom-0 left-0 right-0 z-10 p-6 2xl:p-12 pointer-events-none">
+        <div className="grid grid-cols-24 gap-8 2xl:gap-16">
+          <div className="col-span-7 pointer-events-auto">
             <AboutFooter socials={socials} />
           </div>
         </div>

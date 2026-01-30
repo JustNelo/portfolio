@@ -24,7 +24,7 @@ export default function AboutHeader({ profile, locale }: AboutHeaderProps) {
             <DecodeText
               text={profile.firstName}
               as="span"
-              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] text-primary italic block"
+              className="font-heading text-5xl md:text-6xl lg:text-7xl 2xl:text-8xl font-normal tracking-tight leading-[0.85] text-primary italic block"
               duration={0.7}
               delay={0.2}
               aria-hidden="true"
@@ -32,7 +32,7 @@ export default function AboutHeader({ profile, locale }: AboutHeaderProps) {
             <DecodeText
               text={profile.lastName}
               as="span"
-              className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal tracking-tight leading-[0.85] pl-2 sm:pl-4 md:pl-16 lg:pl-24 xl:pl-38 mt-2 sm:mt-4 text-primary block"
+              className="font-heading text-5xl md:text-6xl lg:text-7xl 2xl:text-8xl font-normal tracking-tight leading-[0.85] 2xl:pl-38 mt-2 sm:mt-4 text-primary block"
               duration={0.7}
               delay={0.2}
               aria-hidden="true"
@@ -41,7 +41,7 @@ export default function AboutHeader({ profile, locale }: AboutHeaderProps) {
         </FadeIn>
 
         <FadeIn delay={0.4}>
-        <div className="space-y-3 sm:space-y-4 text-secondary text-sm sm:text-base leading-relaxed pl-0 sm:pl-4 md:pl-16 lg:pl-24 xl:pl-38 [&>p:last-of-type]:mb-0 max-w-2xl">
+        <div className="space-y-3 sm:space-y-4 text-secondary text-sm sm:text-base leading-relaxed pl-0 2xl:pl-38 [&>p:last-of-type]:mb-0 max-w-2xl">
           {bio.map((paragraph, index) => (
             <DecodeText key={index} text={paragraph} as="p" duration={0.7} delay={0.2} />
           ))}

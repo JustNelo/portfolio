@@ -20,11 +20,11 @@ interface TimelineEntryProps {
 
 const OFFSET_PATTERNS = [
   '', 
-  'sm:ml-8 md:ml-16', 
-  'sm:ml-4 md:ml-8', 
-  'sm:ml-12 md:ml-24', 
-  'sm:ml-2 md:ml-4', 
-  'sm:ml-10 md:ml-20'
+  '2xl:ml-16', 
+  '2xl:ml-8', 
+  '2xl:ml-24', 
+  '2xl:ml-4', 
+  '2xl:ml-20'
 ]
 const STAGGER_DELAY = 0.12
 
@@ -119,25 +119,25 @@ export default async function AboutContent({ skills, experiences, education, loc
   const t = await getTranslations('about')
 
   return (
-    <div className="flex flex-col pt-4 sm:pt-12 pb-8 sm:pb-16">
+    <div className="flex flex-col pt-4 sm:pt-8 md:pt-12 pb-8 sm:pb-12 md:pb-16">
       
-      <section className="relative py-4 sm:py-12 mb-4 sm:mb-8 px-4 sm:px-0">
+      <section className="relative py-4 sm:py-8 md:py-12 mb-4 sm:mb-6 md:mb-8 px-4 sm:px-0">
         <FadeIn className="relative">
           <DecodeText
             text={t('skillsManifest')}
             as="div"
-            className="hidden sm:block absolute -left-2 md:-left-6 top-0 text-[9px] text-white/30 tracking-[0.4em] uppercase"
+            className="hidden 2xl:block absolute -left-2 2xl:-left-6 top-0 text-[9px] text-white/30 tracking-[0.4em] uppercase"
             style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
             duration={0.6}
           />
           <DecodeText
             text={t('skills')}
             as="div"
-            className="sm:hidden text-[10px] text-white/30 tracking-[0.3em] uppercase mb-4"
+            className="2xl:hidden text-[10px] text-white/30 tracking-[0.3em] uppercase mb-4"
             duration={0.6}
           />
 
-          <div className="sm:ml-6 md:ml-10 flex flex-wrap gap-2 sm:gap-3">
+          <div className="2xl:ml-10 flex flex-wrap gap-2 sm:gap-3">
             {skills.map((skill: Skill, index: number) => {
               const category = locale === 'en' && skill.categoryEn ? skill.categoryEn : skill.category
               return (
