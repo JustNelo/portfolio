@@ -10,6 +10,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const messages = await getMessages({ locale });
   const metadata = messages.metadata as { title: string; description: string; ogAlt: string };
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!;
 
   return {
     title: {
@@ -19,7 +20,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: metadata.title,
       description: metadata.description,
+      url: `${baseUrl}/${locale}`,
+      siteName: 'Léon Gallet',
       locale: locale === 'en' ? 'en_US' : 'fr_FR',
+      alternateLocale: locale === 'en' ? 'fr_FR' : 'en_US',
+      type: 'website',
+      images: [
+        {
+          url: `${baseUrl}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: metadata.ogAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: metadata.title,
+      description: metadata.description,
+      images: [`${baseUrl}/og-image.png`],
     },
   };
 }
